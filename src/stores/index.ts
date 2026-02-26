@@ -20,5 +20,6 @@ export { useCurrentUserStore } from "./current-user-store";
 export { usePluginStore } from "./plugin-store";
 export type {
   InitLoadingState,
+  NotificationVariant,
   PluginNotification,
 } from "./plugin-store";

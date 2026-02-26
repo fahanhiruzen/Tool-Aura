@@ -159,6 +159,11 @@ export function useFigmaAuth() {
                       message: "You are not authorized to use this plugin. Only designated users can access it.",
                       variant: "error",
                     });
+                  } else {
+                    setNotification({
+                      message: "Signed in successfully.",
+                      variant: "success",
+                    });
                   }
                 },
                 (err) => {

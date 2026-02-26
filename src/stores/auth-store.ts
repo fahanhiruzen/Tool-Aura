@@ -78,6 +78,10 @@ export function signOut(): void {
   clearTokenFromFigma();
   useCurrentUserStore.getState().clearCurrentUser();
   usePluginStore.getState().setAllowedToUsePlugin(false);
+  usePluginStore.getState().setNotification({
+    message: "You have been signed out.",
+    variant: "info",
+  });
 }
 
 export { FIGMA_TOKEN_KEY };

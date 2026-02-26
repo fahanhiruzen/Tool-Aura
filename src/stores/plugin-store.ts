@@ -5,9 +5,11 @@ export interface InitLoadingState {
   message: string | null;
 }
 
+export type NotificationVariant = "error" | "warning" | "success" | "info";
+
 export interface PluginNotification {
   message: string;
-  variant: "error" | "warning" | "info";
+  variant: NotificationVariant;
 }
 
 interface PluginState {

@@ -23,6 +23,7 @@ export function TokenModal({ onClose }: TokenModalProps) {
   const setCurrentUser = useCurrentUserStore((s) => s.setCurrentUser);
   const setUserRoles = useCurrentUserStore((s) => s.setUserRoles);
   const setAllowedToUsePlugin = usePluginStore((s) => s.setAllowedToUsePlugin);
+  const setNotification = usePluginStore((s) => s.setNotification);
   const userIdFromAuth = useAuthStore((s) => s.userId);
   const figmaData = useFigmaDataStore((s) => s.data);
   const userId = userIdFromAuth ?? figmaData?.user?.id ?? null;
@@ -61,6 +62,10 @@ export function TokenModal({ onClose }: TokenModalProps) {
       setUserRoles(user.roles.map((x) => x.name));
       setCurrentUser(user);
       setAllowedToUsePlugin(true);
+      setNotification({
+        message: "Signed in successfully.",
+        variant: "success",
+      });
       onClose?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid token. Please try again.");

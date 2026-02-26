@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
  */
 export function RestrictedView() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted/30 px-4">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
         <ShieldX className="h-7 w-7 text-destructive" />
       </div>

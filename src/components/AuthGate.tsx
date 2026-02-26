@@ -26,7 +26,7 @@ export function AuthGate({ children }: AuthGateProps) {
   }
   if (!allowedToUsePlugin) {
     return (
-      <main>
+      <main className="min-h-screen bg-background">
         <RestrictedView />
       </main>
     );

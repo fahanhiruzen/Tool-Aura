@@ -13,6 +13,7 @@ import { GlobalSearchPage } from "@/pages/GlobalSearchPage";
 import { sendPluginResize } from "@/lib/figma-plugin";
 import { useNavigationStore, usePluginStore } from "@/stores";
 import { Button } from "@/components/ui/button";
+import { NotificationToast } from "@/components/NotificationToast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,7 @@ function App() {
   const isMinimized = usePluginStore((s) => s.isMinimized);
   return (
     <QueryClientProvider client={queryClient}>
+      {!isMinimized && <NotificationToast />}
       {isMinimized ? (
         <MinimizedView />
       ) : (
