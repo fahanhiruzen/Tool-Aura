@@ -16,7 +16,7 @@ const queryClient = new QueryClient({
 function PageRouter() {
   const activeId = useNavigationStore((s) => s.activeId);
 
-  if (activeId === "release-requests") {
+  if (activeId === "release") {
     return <ReleaseRequestsPage />;
   }
 

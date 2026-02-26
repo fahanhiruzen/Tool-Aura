@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { DonutChart } from "./DonutChart";
 import { ChartLegend } from "./ChartLegend";
 import type { ReleaseStatus } from "@/api/types";
@@ -36,13 +35,10 @@ export function ChartCard({ title, data, isPending, error }: ChartCardProps) {
               <DonutChart segments={data.segments} />
               <ChartLegend segments={data.segments} />
             </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-7 text-muted-foreground"
-            >
-              • {data.donePercent}% Done
-            </Button>
+            <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              {data.donePercent}% Done
+            </span>
           </>
         )}
       </CardContent>

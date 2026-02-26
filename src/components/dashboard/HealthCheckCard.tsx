@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useHealthCheck } from "@/hooks/use-dashboard";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +20,7 @@ export function HealthCheckCard() {
           <p className="text-sm text-destructive">Failed to load health</p>
         )}
         {data && (
-          <>
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <p
               className={cn(
                 "text-2xl font-bold tracking-tight",
@@ -33,16 +32,12 @@ export function HealthCheckCard() {
               {data.message}
             </p>
             {data.allIdsLinked && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="h-7 gap-1.5 text-muted-foreground"
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 All IDs linked
-              </Button>
+              </span>
             )}
-          </>
+          </div>
         )}
       </CardContent>
     </Card>

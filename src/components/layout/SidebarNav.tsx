@@ -1,6 +1,30 @@
+import {
+  LayoutDashboard,
+  Database,
+  RefreshCw,
+  ArrowLeftRight,
+  Layers,
+  Globe,
+  Type,
+  SquareCode,
+  FileText,
+  type LucideIcon,
+} from "lucide-react";
 import { NavItem } from "./NavItem";
 import { useNavigationStore } from "@/stores";
 import type { NavItem as NavItemType, NavSection } from "@/stores";
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  "meta-suite": Database,
+  release: RefreshCw,
+  "responsive-suite": ArrowLeftRight,
+  widgets: Layers,
+  "global-search": Globe,
+  "text-grids": Type,
+  "text-variables": SquareCode,
+  "getting-started": FileText,
+};
 
 const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
   {
@@ -38,16 +62,6 @@ const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
       { id: "getting-started", label: "Getting Started", section: "DESIGN" },
     ],
   },
-  {
-    section: "REVIEW & RELEASE",
-    items: [
-      {
-        id: "release-requests",
-        label: "Release Requests",
-        section: "REVIEW & RELEASE",
-      },
-    ],
-  },
 ];
 
 export function SidebarNav() {
@@ -67,11 +81,13 @@ export function SidebarNav() {
             {items.map((item) => {
               const hasChildren = Boolean(item.children?.length);
               const isExpanded = expandedItemIds.has(item.id);
+              const Icon = NAV_ICONS[item.id];
 
               return (
                 <NavItem
                   key={item.id}
                   item={item}
+                  icon={Icon}
                   isActive={activeId === item.id}
                   onSelect={() => setActive(item.id)}
                   isExpanded={isExpanded}

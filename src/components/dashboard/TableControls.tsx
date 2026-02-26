@@ -8,12 +8,15 @@ interface TableControlsProps {
   onMoreFilters?: () => void;
   selectAllLabel?: string;
   searchPlaceholder?: string;
+  /** When true, only filters + More filters + search are shown (select all is rendered elsewhere) */
+  filtersAndSearchOnly?: boolean;
 }
 
 export function TableControls({
   onMoreFilters,
   selectAllLabel = "Select all Unique IDs",
   searchPlaceholder = "Search",
+  filtersAndSearchOnly = false,
 }: TableControlsProps) {
   const searchQuery = useTableStore((s) => s.searchQuery);
   const setSearchQuery = useTableStore((s) => s.setSearchQuery);
@@ -24,25 +27,27 @@ export function TableControls({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-2">
-        <Checkbox
-          id="select-all"
-          checked={selectAll}
-          onCheckedChange={(v) => setSelectAll(v === true)}
-        />
-        <label
-          htmlFor="select-all"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          {selectAllLabel}
-        </label>
-      </div>
-      {filters.length > 0 && (
+      {!filtersAndSearchOnly && (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="select-all"
+            checked={selectAll}
+            onCheckedChange={(v) => setSelectAll(v === true)}
+          />
+          <label
+            htmlFor="select-all"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            {selectAllLabel}
+          </label>
+        </div>
+      )}
+          {filters.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {filters.map((f) => (
             <span
               key={f.id}
-              className="inline-flex items-center gap-1 rounded-md border bg-muted px-2 py-0.5 text-xs"
+              className="inline-flex items-center gap-1 rounded-full border bg-muted px-2.5 py-0.5 text-xs font-medium"
             >
               {f.label}
               <button
@@ -57,8 +62,8 @@ export function TableControls({
           ))}
         </div>
       )}
-      {onMoreFilters && (
-        <Button variant="outline" size="sm" className="gap-1.5" onClick={onMoreFilters}>
+      {onMoreFilters !== undefined && (
+        <Button variant="outline" size="sm" className="gap-1.5 rounded-lg" onClick={onMoreFilters}>
           <SlidersHorizontal className="h-4 w-4" />
           More filters
         </Button>

@@ -1,20 +1,58 @@
 {
   "name": "Tool Aura",
   "id": "1608778333463547991",
-  "api": "1.0.0",
-  "main": "code.js",
-  "capabilities": [],
-  "enableProposedApi": false,
+  "enablePrivatePluginApi": true,
   "documentAccess": "dynamic-page",
+  "api": "1.0.0",
   "editorType": [
     "figma",
     "figjam",
-    "slides",
-    "buzz"
+    "dev"
+  ],
+  "capabilities": [
+    "codegen",
+    "textreview",
+    "inspect"
+  ],
+  "codegenLanguages": [
+    {
+      "label": "JetPack Compose",
+      "value": "mbux-neon-compose"
+    }
+  ],
+  "permissions": [
+    "currentuser",
+    "teamlibrary"
+  ],
+  "main": "dist/code.js",
+  "ui": "dist/index.html",
+  "relaunchButtons": [
+    {
+      "command": "edit",
+      "name": "Meta Suite Plugin"
+    },
+    {
+      "command": "open",
+      "name": "Meta Suite Plugin",
+      "multipleSelection": true
+    }
   ],
   "networkAccess": {
     "allowedDomains": [
-      "none"
+      "https://s3-alpha.figma.com",
+      "https://mbux.eu.loclx.io",
+      "https://api.figma.com",
+      "https://www.figma.com",
+      "https://af-loadtest-webapp-api-dev.azurewebsites.net",
+      "https://cddb3.uici-int.i.mercedes-benz.com",
+      "https://cddb3.uici.i.mercedes-benz.com",
+      "https://sso.mercedes-benz.com",
+      "https://mbtecstoragedev.blob.core.windows.net",
+      "https://mb-mbux-webapp-api-prod.azurewebsites.net",
+      "https://mbmbuxstorageprod.blob.core.windows.net",
+      "https://mb-mbux-webapp-api-dev.azurewebsites.net",
+      "https://mbmbuxstoragedev.blob.core.windows.net",
+      "https://*.s3.eu-central-1.amazonaws.com/"
     ]
   }
 }

@@ -1,0 +1,136 @@
+// This plugin will generate a sample codegen plugin
+// that appears in the Element tab of the Inspect panel.
+
+// This file holds the main code for plugins. Code in this file has access to
+// the *figma document* via the figma global object.
+// You can access browser APIs in the <script> tag inside "ui.html" which has a
+// full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
+
+// This provides the callback to generate the code.
+
+import { mapComponentType } from './component_mapping';
+import { generateModifiers, generateLayoutWrapper } from './layout_mapping';
+import { mapPropertiesToParameters } from './parameter_mapping';
+
+figma.codegen.on('generate', (event) => {
+  var code = generateCodeForNode(event.node, 0);
+
+  return [
+    {
+      language: "KOTLIN",
+      code: code,
+      title: "MBUX Neon (Compose)",
+    },
+  ];
+});
+
+
+function generateCodeForNode(node: SceneNode, level: number): string {
+  var code = ""
+
+  if (node.type === "INSTANCE") {
+    const instanceNode = node as InstanceNode;
+    const componentName = instanceNode.name;
+    const widgetName = mapComponentType(componentName, instanceNode.componentProperties);
+
+    var argsArray =  mapPropertiesToParameters(componentName, instanceNode.componentProperties)
+    argsArray.push("modifier = Modifier" + generateModifiers(node));
+    var args = argsArray.join(",\n");
+    code += indent("// Selected figma component: " + componentName + "\n", level);
+    code += widgetName + '(';
+    if (args !== "") {
+      code += indent(`\n${args}`, level + 1);
+      code += "\n" + indent("", level);
+    }
+  } else if (node.type === "TEXT") {
+    const textNode = node as TextNode;
+    code += generateTextNode(textNode, level);
+  } else if (node.type === "FRAME") {
+    const layout = generateLayoutWrapper(node as FrameNode);
+    if (layout !== "") {
+      code += indent(layout, level);
+    }
+    for (const child of node.children) {
+      code += "\n";
+      code += generateCodeForNode(child, level + 1);
+    }
+    if (layout !== "") {
+      code += indent("\n}", level);
+    }
+  }
+  return code
+}
+
+function indent(text: string, level: number): string {
+  return text.split("\n").map(line => "  ".repeat(level) + line).join("\n")
+};
+
+function generateTextNode(textNode: TextNode, level: number): string {
+  //console.log(textNode);
+
+  let code = "";
+
+  /*
+fun MBText(//Overloaded function to enable easier use of simple texts.
+  text: String,
+  modifier: Modifier = Modifier,
+  elementID: String = "",
+  font: TextStyle = MBTheme.typography.sansLight.quaternary,
+  textAlign: TextAlign = TextAlign.Start,
+  color: Color = MBTheme.colors.text.font,
+  dropShadow: Boolean = false,
+  isSingleLine: Boolean = true,
+  maxLinesCount: Int = Int.MAX_VALUE
+)
+  */
+
+  let argsArray = [];
+  argsArray.push(`text = "${textNode.characters}"`);
+
+  const fontSize = textNode.fontSize;
+  let fontSizeString = "";
+  switch (fontSize) {
+    case 38:
+      fontSizeString = "quaternary";
+      break;
+    case 43:
+      fontSizeString = "tertiary";
+      break;
+    case 54:
+      fontSizeString = "secondary";
+      break;
+    case 57:
+      fontSizeString = "primary";
+      break;
+    default:
+      fontSizeString = "quaternary";
+      break;
+  }
+
+  const fontWeight = textNode.fontWeight;
+  let fontWeightString = "";
+  switch (fontWeight) {
+    case 300:
+      fontWeightString = "sansLight";
+      break;
+    case 600:
+      fontWeightString = "sansDemi";
+      break;
+    default:
+      fontWeightString = "sansLight";
+      break;
+  }
+
+  argsArray.push(`font = MBTheme.typography.${fontWeightString}.${fontSizeString}`);
+
+  const args = argsArray.join(",\n");
+
+  code += indent('MBText(', level);
+  if (args !== "") {
+    code += indent(`\n${args}`, level + 1);
+    code += "\n" + indent("", level);
+  }
+  code += ")";
+
+  return code;
+}

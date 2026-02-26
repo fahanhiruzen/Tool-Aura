@@ -8,7 +8,12 @@ export function DashboardHeader() {
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Everything at a glance.</p>
         </div>
-        <Button size="sm">Personalize Dashboard</Button>
+        <Button
+          size="sm"
+          className="rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 focus-visible:ring-sky-300"
+        >
+          Personalize Dashboard
+        </Button>
       </div>
     </div>
   );

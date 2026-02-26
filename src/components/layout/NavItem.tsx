@@ -1,9 +1,11 @@
 import { ChevronDown } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavItem as NavItemType } from "@/stores";
 
 interface NavItemProps {
   item: NavItemType;
+  icon?: LucideIcon;
   isActive: boolean;
   onSelect: () => void;
   isExpanded?: boolean;
@@ -13,6 +15,7 @@ interface NavItemProps {
 
 export function NavItem({
   item,
+  icon: Icon,
   isActive,
   onSelect,
   isExpanded,
@@ -27,14 +30,20 @@ export function NavItem({
         className={cn(
           "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
           isActive
-            ? "bg-primary/10 text-primary font-medium"
+            ? "bg-muted text-primary font-medium"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
+        {Icon && (
+          <Icon
+            className={cn("h-4 w-4 shrink-0", isActive && "text-primary")}
+            aria-hidden
+          />
+        )}
         <span className="flex-1 text-left">{item.label}</span>
         {hasChildren && (
           <ChevronDown
-            className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")}
+            className={cn("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-180")}
           />
         )}
       </button>

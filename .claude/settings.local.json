@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:plugin)",
+      "Bash(npm install --save-dev vite-plugin-singlefile)",
+      "Bash(npm run build)"
+    ]
+  }
+}

@@ -22,7 +22,7 @@ interface TableState {
 export const useTableStore = create<TableState>((set) => ({
   searchQuery: "",
   selectedIds: new Set(),
-  filters: [],
+  filters: [{ id: "selected", label: "Selected Filter" }],
   selectAll: false,
   setSearchQuery: (q) => set({ searchQuery: q }),
   setSelectAll: (value) =>
