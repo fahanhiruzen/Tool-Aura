@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm run build:plugin)",
       "Bash(npm install --save-dev vite-plugin-singlefile)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(npm install --save-dev @types/node)",
+      "Bash(npm run main)",
+      "Bash(npm run ui)"
     ]
   }
 }

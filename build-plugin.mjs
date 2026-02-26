@@ -41,7 +41,7 @@ function getUiHtml() {
   return html;
 }
 
-const buildOptions = {
+const baseBuildOptions = {
   entryPoints: [join(root, "main", "code.ts")],
   bundle: true,
   outfile: join(distDir, "code.js"),
@@ -50,17 +50,62 @@ const buildOptions = {
   platform: "neutral",
   target: "es6",
   external: ["figma"],
-  define: {
-    __html__: JSON.stringify(getUiHtml()),
-  },
   logLevel: "info",
 };
 
+function getBuildOptions() {
+  return {
+    ...baseBuildOptions,
+    define: { __html__: JSON.stringify(getUiHtml()) },
+  };
+}
+
+async function rebuild(label) {
+  try {
+    await esbuild.build(getBuildOptions());
+    console.log(`[${new Date().toLocaleTimeString()}] Rebuilt (${label}) — reload plugin in Figma`);
+  } catch {
+    // esbuild already prints the error
+  }
+}
+
 if (watch) {
-  const ctx = await esbuild.context(buildOptions);
-  await ctx.watch();
-  console.log("Watching main/ — plugin will rebuild on save. Reload plugin in Figma to see changes.");
+  const { build: viteBuild } = await import("vite");
+  const { watch: chokidarWatch } = await import("chokidar");
+
+  // Initial plugin build before anything starts
+  await esbuild.build(getBuildOptions());
+  console.log("Plugin built. Watching src/ and main/ for changes…");
+
+  let firstViteBuild = true;
+
+  // Run vite in watch mode. The closeBundle hook fires AFTER vite finishes
+  // writing all output files, so we can safely re-read dist/index.html.
+  viteBuild({
+    configFile: join(root, "vite.config.ts"),
+    build: { watch: {} },
+    plugins: [
+      {
+        name: "figma-plugin-rebuild",
+        async closeBundle() {
+          if (firstViteBuild) {
+            firstViteBuild = false;
+            return; // skip the initial vite build — already done above
+          }
+          await rebuild("src/");
+        },
+      },
+    ],
+  });
+
+  // Watch main/ TS files separately (vite doesn't touch these)
+  chokidarWatch(join(root, "main"), {
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 150 },
+  }).on("all", (_e, file) => {
+    rebuild(file.replace(root + "/", ""));
+  });
 } else {
-  await esbuild.build(buildOptions);
+  await esbuild.build(getBuildOptions());
   console.log("Plugin built: dist/code.js");
 }

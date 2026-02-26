@@ -12,8 +12,8 @@ declare const __html__: string;
 // -----------------------------------------------------------------------------
 
 const NODE_CACHE_MAX = 10_000;
-const UI_HEIGHT = 600;
-const UI_WIDTH = 711;
+const UI_HEIGHT = 700;
+const UI_WIDTH = 900;
 
 export let SIZES_COLL_ID =
   "VariableCollectionId:e42937af1d16769449ba78edbb8f49f3586a35e0/7366:525";
