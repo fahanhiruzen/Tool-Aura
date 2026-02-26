@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavItem as NavItemType } from "@/stores";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface NavItemProps {
   item: NavItemType;
@@ -14,6 +15,7 @@ interface NavItemProps {
   activeId?: string | null;
   onSelectChild?: (id: string) => void;
   badge?: number;
+  isCollapsed?: boolean;
 }
 
 export function NavItem({
@@ -27,7 +29,35 @@ export function NavItem({
   activeId,
   onSelectChild,
   badge,
+  isCollapsed,
 }: NavItemProps) {
+  if (isCollapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={onSelect}
+            className={cn(
+              "flex w-full items-center justify-center rounded-md p-2 transition-colors",
+              isActive
+                ? "bg-muted text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {Icon && (
+              <Icon
+                className={cn("h-4 w-4 shrink-0", isActive && "text-primary")}
+                aria-hidden
+              />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">{item.label}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-0.5">
       <button

@@ -125,10 +125,10 @@ export function useFigmaAuth() {
             ? payload.accessToken
             : null;
 
-      // If we're already validated with the same token/user (e.g. after maximize), keep validated
-      const { token: currentToken, userId: currentUserId, isValidated } = useAuthStore.getState();
+      // If the token is cached in both Figma storage and Zustand, assume it's valid — skip revalidation
+      const { token: currentToken, userId: currentUserId } = useAuthStore.getState();
       const alreadyValidated =
-        isValidated &&
+        storedToken !== null &&
         currentToken === storedToken &&
         currentUserId === uid;
 

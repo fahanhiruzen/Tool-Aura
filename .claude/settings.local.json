@@ -6,7 +6,10 @@
       "Bash(npm run build)",
       "Bash(npm install --save-dev @types/node)",
       "Bash(npm run main)",
-      "Bash(npm run ui)"
+      "Bash(npm run ui)",
+      "Bash(ls /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/*.lock /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/bun.lockb)",
+      "Bash(npm install @radix-ui/react-tooltip --save)",
+      "Bash(ls /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/.env*)"
     ]
   }
 }

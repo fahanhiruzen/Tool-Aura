@@ -1,98 +1,42 @@
-import { useState, useMemo } from "react";
-import { Plus, Search, Trash2, Pencil, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import {
+  Plus,
+  Search,
+  Trash2,
+  Pencil,
+  ChevronUp,
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { CreatePresetModal } from "@/components/user-groups/CreatePresetModal";
-import { EditPresetModal, type EditPresetData } from "@/components/user-groups/EditPresetModal";
-
-// ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
-
-interface GroupMember {
-  name: string;
-  email: string;
-}
-
-interface UserGroup {
-  id: string;
-  name: string;
-  userCount: number;
-  members: GroupMember[];
-  domain: string;
-}
-
-const MOCK_GROUPS: UserGroup[] = [
-  {
-    id: "1",
-    name: "Preset Name",
-    userCount: 12,
-    members: [
-      { name: "Candice Wu",     email: "candice@email.com" },
-      { name: "Demi Wilkinson", email: "demi@email.com" },
-      { name: "Drew Cano",      email: "drew@email.com" },
-      { name: "Olivia Rhye",    email: "olivia@email.com" },
-      { name: "Phoenix Baker",  email: "phoenix@email.com" },
-      { name: "Lana Steiner",   email: "lana@email.com" },
-      { name: "Natali Craig",   email: "natali@email.com" },
-    ],
-    domain: "[Domain Name]",
-  },
-  {
-    id: "2",
-    name: "Preset Name",
-    userCount: 2,
-    members: [
-      { name: "Candice Wu",     email: "candice@email.com" },
-      { name: "Demi Wilkinson", email: "demi@email.com" },
-    ],
-    domain: "[Domain Name]",
-  },
-  {
-    id: "3",
-    name: "Preset Name",
-    userCount: 1235,
-    members: [
-      { name: "Olivia Rhye",    email: "olivia@email.com" },
-      { name: "Phoenix Baker",  email: "phoenix@email.com" },
-      { name: "Lana Steiner",   email: "lana@email.com" },
-      { name: "Drew Cano",      email: "drew@email.com" },
-      { name: "Natali Craig",   email: "natali@email.com" },
-      { name: "Demi Wilkinson", email: "demi@email.com" },
-      { name: "Candice Wu",     email: "candice@email.com" },
-    ],
-    domain: "[Domain Name]",
-  },
-  {
-    id: "4",
-    name: "Preset Name",
-    userCount: 13,
-    members: [
-      { name: "Drew Cano",      email: "drew@email.com" },
-      { name: "Natali Craig",   email: "natali@email.com" },
-      { name: "Candice Wu",     email: "candice@email.com" },
-    ],
-    domain: "[Domain Name]",
-  },
-  {
-    id: "5",
-    name: "Preset Name",
-    userCount: 123,
-    members: [
-      { name: "Phoenix Baker",  email: "phoenix@email.com" },
-      { name: "Lana Steiner",   email: "lana@email.com" },
-      { name: "Demi Wilkinson", email: "demi@email.com" },
-    ],
-    domain: "[Domain Name]",
-  },
-];
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { cn, formatUsername } from "@/lib/utils";
+import {
+  CreatePresetModal,
+  type CreatePresetPayload,
+} from "@/components/user-groups/CreatePresetModal";
+import {
+  EditPresetModal,
+  type UpdatePresetPayload,
+} from "@/components/user-groups/EditPresetModal";
+import {
+  usePresets,
+  useCreatePreset,
+  useUpdatePreset,
+  useDeletePreset,
+} from "@/hooks/use-presets";
+import { TEAMS } from "@/lib/constants";
+import type { IPreset } from "@/api/preset";
+import { usePluginStore } from "@/stores/plugin-store";
 
 const PAGE_SIZE = 10;
-
-// ---------------------------------------------------------------------------
-// Sort header
-// ---------------------------------------------------------------------------
 
 type SortKey = "name" | "users" | "domain";
 type SortDir = "asc" | "desc";
@@ -114,7 +58,12 @@ function SortTh({
 }) {
   const isActive = sortKey === col;
   return (
-    <th className={cn("px-4 py-3 text-left text-sm font-medium text-muted-foreground", className)}>
+    <th
+      className={cn(
+        "px-4 py-3 text-left text-sm font-medium text-muted-foreground",
+        className
+      )}
+    >
       <button
         type="button"
         className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
@@ -135,17 +84,28 @@ function SortTh({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export function UserGroupsPage() {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [page, setPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<EditPresetData | null>(null);
+  const [editingPreset, setEditingPreset] = useState<IPreset | null>(null);
+  const [deletingPreset, setDeletingPreset] = useState<IPreset | null>(null);
+
+  const { data, isLoading, isError } = usePresets({
+    pageNumber: page - 1,
+    pageSize: PAGE_SIZE,
+    sort: sortDir === "asc" ? "ASC" : "DESC",
+    searchName: search || undefined,
+  });
+
+  const createPreset = useCreatePreset();
+  const updatePreset = useUpdatePreset();
+  const deletePreset = useDeletePreset();
+
+  const presets = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
   function handleSort(key: SortKey) {
     if (key === sortKey) {
@@ -157,29 +117,28 @@ export function UserGroupsPage() {
     setPage(1);
   }
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return MOCK_GROUPS.filter(
-      (g) =>
-        g.name.toLowerCase().includes(q) ||
-        g.domain.toLowerCase().includes(q) ||
-        g.members.some((m) => m.name.toLowerCase().includes(q))
-    );
-  }, [search]);
+  function getTeamName(domainId: string) {
+    return TEAMS.find((t) => t.id === domainId)?.label ?? domainId;
+  }
 
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === "name") cmp = a.name.localeCompare(b.name);
-      else if (sortKey === "users") cmp = a.userCount - b.userCount;
-      else if (sortKey === "domain") cmp = a.domain.localeCompare(b.domain);
-      return sortDir === "asc" ? cmp : -cmp;
+  async function handleCreate(payload: CreatePresetPayload) {
+    await createPreset.mutateAsync(payload);
+    setShowCreateModal(false);
+  }
+
+  async function handleUpdate(payload: UpdatePresetPayload) {
+    await updatePreset.mutateAsync({
+      id: payload.id,
+      payload: { name: payload.name, members: payload.members },
     });
-  }, [filtered, sortKey, sortDir]);
+    setEditingPreset(null);
+  }
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
+  async function handleDelete() {
+    if (!deletingPreset) return;
+    await deletePreset.mutateAsync(deletingPreset.id);
+    setDeletingPreset(null);
+  }
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -189,11 +148,14 @@ export function UserGroupsPage() {
             User Group Preset Management
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            You can use User Groups for repetitive tasks eg. notifiying a group
+            You can use User Groups for repetitive tasks eg. notifying a group
             of people about a release.
           </p>
         </div>
-        <Button className="gap-2 shrink-0" onClick={() => setShowCreateModal(true)}>
+        <Button
+          className="gap-2 shrink-0"
+          onClick={() => setShowCreateModal(true)}
+        >
           <Plus className="h-4 w-4" />
           Create User Group
         </Button>
@@ -223,10 +185,21 @@ export function UserGroupsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-background">
-                <SortTh col="name" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-40">
+                <SortTh
+                  col="name"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="w-40"
+                >
                   Name
                 </SortTh>
-                <SortTh col="users" sortKey={sortKey} sortDir={sortDir} onSort={handleSort}>
+                <SortTh
+                  col="users"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                >
                   <span className="flex items-center gap-1">
                     Users
                     <span className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-muted-foreground/40 text-[9px]">
@@ -234,41 +207,105 @@ export function UserGroupsPage() {
                     </span>
                   </span>
                 </SortTh>
-                <SortTh col="domain" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="w-32">
+                <SortTh
+                  col="domain"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="w-32"
+                >
                   Domain
                 </SortTh>
                 <th className="w-16 px-4 py-3" />
               </tr>
             </thead>
             <tbody>
-              {paginated.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center text-sm text-muted-foreground"
+                  >
+                    Loading...
+                  </td>
+                </tr>
+              ) : isError ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center text-sm text-destructive"
+                  >
+                    Failed to load user groups.
+                  </td>
+                </tr>
+              ) : presets.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-8 text-center text-sm text-muted-foreground"
+                  >
                     No user groups found.
                   </td>
                 </tr>
               ) : (
-                paginated.map((group) => (
+                presets.map((preset) => (
                   <tr
-                    key={group.id}
+                    key={preset.id}
                     className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
                   >
                     <td className="px-4 py-3.5 align-top">
-                      <p className="text-sm font-semibold text-foreground">{group.name}</p>
-                      <p className="text-xs text-muted-foreground">{group.userCount} Users</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {preset.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {preset.members.length} Users
+                      </p>
                     </td>
                     <td className="px-4 py-3.5 text-sm text-muted-foreground">
-                      {group.members.map((m) => m.name).join(", ")}
+                      {(() => {
+                        const names = preset.members.map((m) =>
+                          formatUsername(m.userEmail)
+                        );
+                        const visible = names.slice(0, 2);
+                        const overflow = names.slice(2);
+                        return (
+                          <div className="space-y-0.5">
+                            {visible.map((name, i) => (
+                              <div key={i} className="flex items-center gap-1.5 min-w-0">
+                                <span className="truncate">{name}</span>
+                                {i === visible.length - 1 && overflow.length > 0 && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="shrink-0 cursor-default rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground hover:bg-muted/80 transition-colors">
+                                        +{overflow.length}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-[220px]">
+                                      <p className="whitespace-pre-wrap leading-relaxed">
+                                        {overflow.join("\n")}
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </td>
-                    <td className="px-4 py-3.5 align-top">
-                      <p className="text-sm text-foreground">{group.domain}</p>
+                    <td className="px-4 py-3.5">
+                      <p className="text-sm text-foreground">
+                        {getTeamName(preset.domainId)}
+                      </p>
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
-                          className="text-red-400 hover:text-red-600 transition-colors"
+                          className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-40"
                           aria-label="Delete"
+                          disabled={deletePreset.isPending}
+                          onClick={() => setDeletingPreset(preset)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -276,12 +313,7 @@ export function UserGroupsPage() {
                           type="button"
                           className="text-muted-foreground hover:text-foreground transition-colors"
                           aria-label="Edit"
-                          onClick={() =>
-                            setEditingGroup({
-                              presetName: group.name,
-                              members: group.members,
-                            })
-                          }
+                          onClick={() => setEditingPreset(preset)}
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
@@ -307,11 +339,11 @@ export function UserGroupsPage() {
           <ChevronLeft className="h-4 w-4" />
         </button>
         <span className="text-sm text-foreground">
-          Page {page} of {totalPages}
+          Page {page} of {Math.max(1, totalPages)}
         </span>
         <button
           type="button"
-          disabled={page >= totalPages}
+          disabled={page >= totalPages || data?.last}
           onClick={() => setPage((p) => p + 1)}
           className="flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           aria-label="Next page"
@@ -323,16 +355,51 @@ export function UserGroupsPage() {
       {showCreateModal && (
         <CreatePresetModal
           onClose={() => setShowCreateModal(false)}
-          onSave={() => setShowCreateModal(false)}
+          onSave={handleCreate}
+          isLoading={createPreset.isPending}
         />
       )}
 
-      {editingGroup && (
+      {editingPreset && (
         <EditPresetModal
-          initialData={editingGroup}
-          onClose={() => setEditingGroup(null)}
-          onSave={() => setEditingGroup(null)}
+          preset={editingPreset}
+          onClose={() => setEditingPreset(null)}
+          onSave={handleUpdate}
+          isLoading={updatePreset.isPending}
         />
+      )}
+
+      {deletingPreset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-background p-6 shadow-xl">
+            <h2 className="text-base font-semibold text-foreground">
+              Delete User Group
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-foreground">
+                {deletingPreset.name}
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setDeletingPreset(null)}
+                disabled={deletePreset.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deletePreset.isPending}
+              >
+                {deletePreset.isPending ? "Deleting…" : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

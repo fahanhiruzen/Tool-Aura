@@ -17,6 +17,7 @@ import { NavItem } from "./NavItem";
 import { useNavigationStore } from "@/stores";
 import type { NavItem as NavItemType, NavSection } from "@/stores";
 import { mockReleaseRequests } from "@/api/mocks";
+import { cn } from "@/lib/utils";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -117,11 +118,12 @@ export function SidebarNav() {
   const quickSearch = useNavigationStore((s) => s.quickSearch);
   const setActive = useNavigationStore((s) => s.setActive);
   const toggleItemExpanded = useNavigationStore((s) => s.toggleItemExpanded);
+  const isCollapsed = useNavigationStore((s) => s.isSidebarCollapsed);
 
   const q = quickSearch.trim().toLowerCase();
 
   return (
-    <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 py-2">
+    <nav className={cn("flex flex-1 flex-col gap-4 overflow-y-auto py-2", isCollapsed ? "px-1" : "px-2")}>
       {NAV_STRUCTURE.map(({ section, items }) => {
         const visibleItems = q
           ? items.filter((item) => itemMatchesQuery(item, q))
@@ -131,9 +133,11 @@ export function SidebarNav() {
 
         return (
           <div key={section} className="space-y-1">
-            <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {section}
-            </div>
+            {!isCollapsed && (
+              <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {section}
+              </div>
+            )}
             <div className="space-y-0.5">
               {visibleItems.map((item) => {
                 const hasChildren = Boolean(item.children?.length);
@@ -163,6 +167,7 @@ export function SidebarNav() {
                     activeId={activeId}
                     onSelectChild={setActive}
                     badge={NAV_BADGES[item.id]}
+                    isCollapsed={isCollapsed}
                   />
                 );
               })}
@@ -171,7 +176,7 @@ export function SidebarNav() {
         );
       })}
 
-      {q && NAV_STRUCTURE.every(({ items }) => items.every((item) => !itemMatchesQuery(item, q))) && (
+      {q && !isCollapsed && NAV_STRUCTURE.every(({ items }) => items.every((item) => !itemMatchesQuery(item, q))) && (
         <p className="px-3 py-2 text-xs text-muted-foreground">No results found.</p>
       )}
     </nav>

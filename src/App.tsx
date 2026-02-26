@@ -10,6 +10,8 @@ import { ResponsiveSuitePage } from "@/pages/ResponsiveSuitePage";
 import { TextGridsPage } from "@/pages/TextGridsPage";
 import { UserGroupsPage } from "@/pages/UserGroupsPage";
 import { GlobalSearchPage } from "@/pages/GlobalSearchPage";
+import { UsersPage } from "@/pages/UsersPage";
+import { RoleRequestsPage } from "@/pages/RoleRequestsPage";
 import { sendPluginResize } from "@/lib/figma-plugin";
 import { useNavigationStore, usePluginStore } from "@/stores";
 import { Button } from "@/components/ui/button";
@@ -56,6 +58,10 @@ function PageRouter() {
       return <UserGroupsPage />;
     case "global-search":
       return <GlobalSearchPage />;
+    case "users":
+      return <UsersPage />;
+    case "role-requests":
+      return <RoleRequestsPage />;
     default:
       return <PlaceholderPage id={activeId} />;
   }

@@ -1,6 +1,6 @@
-import { Minimize2 } from "lucide-react";
+import { Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { sendPluginResize } from "@/lib/figma-plugin";
-import { usePluginStore } from "@/stores";
+import { usePluginStore, useNavigationStore } from "@/stores";
 import { Button } from "@/components/ui/button";
 
 function ToolHubLogo() {
@@ -29,14 +29,14 @@ function ToolHubLogo() {
 <feOffset dy="1"/>
 <feGaussianBlur stdDeviation="1.5"/>
 <feColorMatrix type="matrix" values="0 0 0 0 0.0392157 0 0 0 0 0.0509804 0 0 0 0 0.0705882 0 0 0 0.1 0"/>
-<feBlend mode="normal" in2="effect1_dropShadow_6328_39822" result="effect2_dropShadow_6328_39822"/>
+<feBlend mode="normal" in2="effect2_dropShadow_6328_39822" result="effect2_dropShadow_6328_39822"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feMorphology radius="0.5" operator="erode" in="SourceAlpha" result="effect3_dropShadow_6328_39822"/>
 <feOffset dy="1"/>
 <feGaussianBlur stdDeviation="0.5"/>
 <feComposite in2="hardAlpha" operator="out"/>
 <feColorMatrix type="matrix" values="0 0 0 0 0.0392157 0 0 0 0 0.0509804 0 0 0 0 0.0705882 0 0 0 0.13 0"/>
-<feBlend mode="normal" in2="effect2_dropShadow_6328_39822" result="effect3_dropShadow_6328_39822"/>
+<feBlend mode="normal" in2="effect3_dropShadow_6328_39822" result="effect3_dropShadow_6328_39822"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect3_dropShadow_6328_39822" result="shape"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dy="-0.5"/>
@@ -61,25 +61,57 @@ function ToolHubLogo() {
 
 export function SidebarHeader() {
   const setMinimized = usePluginStore((s) => s.setMinimized);
+  const isCollapsed = useNavigationStore((s) => s.isSidebarCollapsed);
+  const toggleSidebar = useNavigationStore((s) => s.toggleSidebar);
+
   const handleMinimize = () => {
     setMinimized(true);
     sendPluginResize("minimize");
   };
+
+  if (isCollapsed) {
+    return (
+      <div className="flex shrink-0 flex-col items-center gap-2 border-b py-3">
+        <ToolHubLogo />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={toggleSidebar}
+          title="Expand sidebar"
+        >
+          <PanelLeftOpen className="size-4" />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4">
       <div className="flex items-center gap-3">
         <ToolHubLogo />
         <span className="text-lg font-semibold text-foreground">ToolHub</span>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="shrink-0"
-        onClick={handleMinimize}
-        title="Minimise"
-      >
-        <Minimize2 className="size-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+          onClick={toggleSidebar}
+          title="Collapse sidebar"
+        >
+          <PanelLeftClose className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="shrink-0"
+          onClick={handleMinimize}
+          title="Minimise"
+        >
+          <Minimize2 className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }
