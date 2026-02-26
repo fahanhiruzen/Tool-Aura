@@ -5,7 +5,8 @@ export type NavSection =
   | "PLUGIN"
   | "DATA"
   | "DESIGN"
-  | "REVIEW & RELEASE";
+  | "REVIEW & RELEASE"
+  | "USER MANAGEMENT";
 
 export interface NavItem {
   id: string;

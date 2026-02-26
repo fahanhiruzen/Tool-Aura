@@ -8,11 +8,15 @@ import {
   Type,
   SquareCode,
   FileText,
+  Users,
+  UsersRound,
+  ClipboardCheck,
   type LucideIcon,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
 import { useNavigationStore } from "@/stores";
 import type { NavItem as NavItemType, NavSection } from "@/stores";
+import { mockReleaseRequests } from "@/api/mocks";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -24,6 +28,11 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "text-grids": Type,
   "text-variables": SquareCode,
   "getting-started": FileText,
+  responsive: ArrowLeftRight,
+  "release-requests": RefreshCw,
+  "user-groups": UsersRound,
+  users: Users,
+  "role-requests": ClipboardCheck,
 };
 
 const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
@@ -60,45 +69,111 @@ const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
     section: "DESIGN",
     items: [
       { id: "getting-started", label: "Getting Started", section: "DESIGN" },
+      { id: "responsive", label: "Responsive", section: "DESIGN" },
+    ],
+  },
+  {
+    section: "REVIEW & RELEASE",
+    items: [
+      {
+        id: "release-requests",
+        label: "Release Requests",
+        section: "REVIEW & RELEASE",
+      },
+      {
+        id: "user-groups",
+        label: "User Groups",
+        section: "REVIEW & RELEASE",
+      },
+    ],
+  },
+  {
+    section: "USER MANAGEMENT",
+    items: [
+      { id: "users", label: "Users", section: "USER MANAGEMENT" },
+      { id: "user-groups", label: "User Groups", section: "USER MANAGEMENT" },
+      {
+        id: "role-requests",
+        label: "Role Requests",
+        section: "USER MANAGEMENT",
+      },
     ],
   },
 ];
 
+// Badge counts keyed by nav item id
+const NAV_BADGES: Record<string, number> = {
+  "release-requests": mockReleaseRequests.toReview.length,
+};
+
+function itemMatchesQuery(item: NavItemType, q: string): boolean {
+  if (item.label.toLowerCase().includes(q)) return true;
+  return item.children?.some((c) => c.label.toLowerCase().includes(q)) ?? false;
+}
+
 export function SidebarNav() {
   const activeId = useNavigationStore((s) => s.activeId);
   const expandedItemIds = useNavigationStore((s) => s.expandedItemIds);
+  const quickSearch = useNavigationStore((s) => s.quickSearch);
   const setActive = useNavigationStore((s) => s.setActive);
   const toggleItemExpanded = useNavigationStore((s) => s.toggleItemExpanded);
 
+  const q = quickSearch.trim().toLowerCase();
+
   return (
     <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 py-2">
-      {NAV_STRUCTURE.map(({ section, items }) => (
-        <div key={section} className="space-y-1">
-          <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {section}
-          </div>
-          <div className="space-y-0.5">
-            {items.map((item) => {
-              const hasChildren = Boolean(item.children?.length);
-              const isExpanded = expandedItemIds.has(item.id);
-              const Icon = NAV_ICONS[item.id];
+      {NAV_STRUCTURE.map(({ section, items }) => {
+        const visibleItems = q
+          ? items.filter((item) => itemMatchesQuery(item, q))
+          : items;
 
-              return (
-                <NavItem
-                  key={item.id}
-                  item={item}
-                  icon={Icon}
-                  isActive={activeId === item.id}
-                  onSelect={() => setActive(item.id)}
-                  isExpanded={isExpanded}
-                  onToggle={() => toggleItemExpanded(item.id)}
-                  hasChildren={hasChildren}
-                />
-              );
-            })}
+        if (visibleItems.length === 0) return null;
+
+        return (
+          <div key={section} className="space-y-1">
+            <div className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {section}
+            </div>
+            <div className="space-y-0.5">
+              {visibleItems.map((item) => {
+                const hasChildren = Boolean(item.children?.length);
+                // While searching, auto-expand items whose children match
+                const isExpanded =
+                  expandedItemIds.has(item.id) ||
+                  (!!q &&
+                    (item.children?.some((c) =>
+                      c.label.toLowerCase().includes(q)
+                    ) ?? false));
+                const Icon = NAV_ICONS[item.id];
+
+                const childIds = item.children?.map((c) => c.id) ?? [];
+                const isParentActive =
+                  activeId === item.id || childIds.includes(activeId ?? "");
+
+                return (
+                  <NavItem
+                    key={`${section}-${item.id}`}
+                    item={item}
+                    icon={Icon}
+                    isActive={isParentActive}
+                    onSelect={() => setActive(item.id)}
+                    isExpanded={isExpanded}
+                    onToggle={() => toggleItemExpanded(item.id)}
+                    hasChildren={hasChildren}
+                    activeId={activeId}
+                    onSelectChild={setActive}
+                    badge={NAV_BADGES[item.id]}
+                  />
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
+      {q && NAV_STRUCTURE.every(({ items }) => items.every((item) => !itemMatchesQuery(item, q))) && (
+        <p className="px-3 py-2 text-xs text-muted-foreground">No results found.</p>
+      )}
     </nav>
   );
 }

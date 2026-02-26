@@ -12,34 +12,30 @@ export function CreatedByMeSection({ requests }: CreatedByMeSectionProps) {
 
   return (
     <div className="rounded-xl border bg-card shadow-sm">
-      <button
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left"
-      >
-        <div>
+      {/* Header + subtitle — always visible */}
+      <div className="px-5 pt-4 pb-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="flex w-full items-center justify-between"
+        >
           <span className="text-base font-semibold">Created by me</span>
-        </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="border-t px-5 pb-5">
-          <p className="py-3 text-sm text-muted-foreground">
-            Every release request I created
-          </p>
-          <ReleaseRequestsTable requests={requests} />
-        </div>
-      )}
-
-      {!isOpen && (
-        <p className="px-5 pb-4 text-sm text-muted-foreground">
+          {isOpen ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        <p className="mt-1 text-sm text-muted-foreground">
           Every release request I created
         </p>
+      </div>
+
+      {/* Expanded content */}
+      {isOpen && (
+        <div className="border-t px-5 pb-5 pt-4">
+          <ReleaseRequestsTable requests={requests} />
+        </div>
       )}
     </div>
   );

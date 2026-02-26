@@ -33,12 +33,14 @@ export function ChartCard({ title, data, isPending, error }: ChartCardProps) {
           <>
             <div className="flex items-center gap-4">
               <DonutChart segments={data.segments} />
-              <ChartLegend segments={data.segments} />
+              <ChartLegend segments={data.segments} className="flex-1" />
             </div>
-            <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {data.donePercent}% Done
-            </span>
+            <div className="flex justify-end">
+              <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                {data.donePercent}% Done
+              </span>
+            </div>
           </>
         )}
       </CardContent>

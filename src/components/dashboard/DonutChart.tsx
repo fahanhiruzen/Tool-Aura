@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 import type { ChartSegment } from "@/api/types";
 
-const COLOR_MAP = {
-  green: "fill-emerald-500",
-  gray: "fill-muted-foreground/40",
-  red: "fill-destructive",
-} as const;
+const STROKE_COLOR: Record<string, string> = {
+  green: "#22c55e",
+  gray: "#e5e7eb",
+  red: "#ef4444",
+};
 
 interface DonutChartProps {
   segments: ChartSegment[];
@@ -17,8 +17,8 @@ export function DonutChart({ segments, size = 80, className }: DonutChartProps) 
   const total = segments.reduce((s, seg) => s + seg.value, 0);
   const strokeWidth = size * 0.2;
   const r = (size - strokeWidth) / 2;
-  const c = size / 2;
-  let offset = 0;
+  const circumference = 2 * Math.PI * r;
+  let cumulativeOffset = 0;
 
   return (
     <svg
@@ -29,22 +29,21 @@ export function DonutChart({ segments, size = 80, className }: DonutChartProps) 
     >
       {segments.map((seg) => {
         const ratio = total ? seg.value / total : 0;
-        const dashArray = 2 * Math.PI * r;
-        const dashOffset = dashArray - dashArray * ratio + offset;
-        offset -= dashArray * ratio;
+        const dashLength = circumference * ratio;
+        const dashOffset = -cumulativeOffset;
+        cumulativeOffset += dashLength;
 
         return (
           <circle
             key={seg.label}
-            cx={c}
-            cy={c}
+            cx={size / 2}
+            cy={size / 2}
             r={r}
             fill="none"
-            stroke="currentColor"
+            stroke={STROKE_COLOR[seg.color]}
             strokeWidth={strokeWidth}
-            strokeDasharray={dashArray}
+            strokeDasharray={`${dashLength} ${circumference}`}
             strokeDashoffset={dashOffset}
-            className={COLOR_MAP[seg.color]}
           />
         );
       })}

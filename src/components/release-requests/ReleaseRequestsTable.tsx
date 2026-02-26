@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Pencil } from "lucide-react";
+import { Search, Pencil, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ReleaseStatusBadge } from "./ReleaseStatusBadge";
 import type { ReleaseRequest } from "@/api/types";
@@ -41,9 +41,17 @@ function ReleaseRequestRow({ request }: ReleaseRequestRowProps) {
         )}
       </td>
 
-      {/* Created at */}
-      <td className="px-4 py-3 text-sm text-foreground whitespace-nowrap">
-        {request.createdAt}
+      {/* Created at — date on line 1, time on line 2 */}
+      <td className="px-4 py-3 text-sm">
+        {(() => {
+          const [date, ...rest] = request.createdAt.split(" ");
+          return (
+            <>
+              <div className="text-foreground">{date}</div>
+              <div className="text-muted-foreground">{rest.join(" ")}</div>
+            </>
+          );
+        })()}
       </td>
 
       {/* Progress */}
@@ -158,7 +166,9 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
                   className="flex items-center hover:text-foreground"
                   onClick={() => handleSort("createdAt")}
                 >
-                  Created at <SortIcon col="createdAt" />
+                  Created at
+                  <HelpCircle className="ml-1 h-3 w-3" />
+                  <SortIcon col="createdAt" />
                 </button>
               </th>
               <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">

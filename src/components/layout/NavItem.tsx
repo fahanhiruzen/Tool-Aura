@@ -11,6 +11,9 @@ interface NavItemProps {
   isExpanded?: boolean;
   onToggle?: () => void;
   hasChildren?: boolean;
+  activeId?: string | null;
+  onSelectChild?: (id: string) => void;
+  badge?: number;
 }
 
 export function NavItem({
@@ -21,6 +24,9 @@ export function NavItem({
   isExpanded,
   onToggle,
   hasChildren,
+  activeId,
+  onSelectChild,
+  badge,
 }: NavItemProps) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -41,6 +47,11 @@ export function NavItem({
           />
         )}
         <span className="flex-1 text-left">{item.label}</span>
+        {badge != null && badge > 0 && (
+          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+            {badge}
+          </span>
+        )}
         {hasChildren && (
           <ChevronDown
             className={cn("h-4 w-4 shrink-0 transition-transform", isExpanded && "rotate-180")}
@@ -53,8 +64,13 @@ export function NavItem({
             <button
               key={child.id}
               type="button"
-              onClick={onSelect}
-              className="rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => onSelectChild?.(child.id)}
+              className={cn(
+                "rounded-md px-2 py-1.5 text-left text-sm transition-colors",
+                activeId === child.id
+                  ? "bg-muted text-primary font-medium"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
             >
               {child.label}
             </button>
