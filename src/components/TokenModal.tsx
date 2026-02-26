@@ -3,6 +3,7 @@ import { X, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getStateCode, getRefreshToken } from "@/api/auth";
 import { getCurrentUser } from "@/api/user";
+import { isAllowedEmail } from "@/config/allowed-users";
 import { useAuthStore, persistTokenToFigma } from "@/stores/auth-store";
 import { useCurrentUserStore } from "@/stores/current-user-store";
 import { useFigmaDataStore } from "@/stores/figma-data-store";
@@ -21,7 +22,7 @@ export function TokenModal({ onClose }: TokenModalProps) {
   const { setToken: setStoreToken, setValidated } = useAuthStore();
   const setCurrentUser = useCurrentUserStore((s) => s.setCurrentUser);
   const setUserRoles = useCurrentUserStore((s) => s.setUserRoles);
-  const setNotification = usePluginStore((s) => s.setNotification);
+  const setAllowedToUsePlugin = usePluginStore((s) => s.setAllowedToUsePlugin);
   const userIdFromAuth = useAuthStore((s) => s.userId);
   const figmaData = useFigmaDataStore((s) => s.data);
   const userId = userIdFromAuth ?? figmaData?.user?.id ?? null;
@@ -46,20 +47,20 @@ export function TokenModal({ onClose }: TokenModalProps) {
     setLoading(true);
     try {
       await getStateCode(userId, value);
+      const user = await getCurrentUser(value);
+      if (!isAllowedEmail(user.email)) {
+        setError(
+          "You are not authorized to use this plugin. Only designated users can access it."
+        );
+        setLoading(false);
+        return;
+      }
       setStoreToken(value);
       setValidated(true);
       persistTokenToFigma(value);
-      getCurrentUser(value)
-        .then((response) => {
-          setUserRoles(response.roles.map((x) => x.name));
-          setCurrentUser(response);
-        })
-        .catch((err) => {
-          setNotification({
-            message: err instanceof Error ? err.message : "Failed to load user",
-            variant: "error",
-          });
-        });
+      setUserRoles(user.roles.map((x) => x.name));
+      setCurrentUser(user);
+      setAllowedToUsePlugin(true);
       onClose?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid token. Please try again.");

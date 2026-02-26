@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStateCode } from "@/api/auth";
 import { getCurrentUser } from "@/api/user";
+import { isAllowedEmail } from "@/config/allowed-users";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUserStore } from "@/stores/current-user-store";
 import {
@@ -40,6 +41,8 @@ export function useFigmaAuth() {
   const setInitLoading = usePluginStore((s) => s.setInitLoading);
   const setNotification = usePluginStore((s) => s.setNotification);
   const setParentCacheData = usePluginStore((s) => s.setParentCacheData);
+  const setMinimized = usePluginStore((s) => s.setMinimized);
+  const setAllowedToUsePlugin = usePluginStore((s) => s.setAllowedToUsePlugin);
   const setCurrentUser = useCurrentUserStore((s) => s.setCurrentUser);
   const setUserRoles = useCurrentUserStore((s) => s.setUserRoles);
 
@@ -91,6 +94,11 @@ export function useFigmaAuth() {
         return;
       }
 
+      if (type === "resized") {
+        setMinimized((m.minimized as boolean) ?? false);
+        return;
+      }
+
       if (type === "error") {
         setNotification({
           message: (m.message as string) ?? "An error occurred",
@@ -117,25 +125,53 @@ export function useFigmaAuth() {
             ? payload.accessToken
             : null;
 
-      setAuth(storedToken, uid, false);
+      // If we're already validated with the same token/user (e.g. after maximize), keep validated
+      const { token: currentToken, userId: currentUserId, isValidated } = useAuthStore.getState();
+      const alreadyValidated =
+        isValidated &&
+        currentToken === storedToken &&
+        currentUserId === uid;
+
+      setAuth(storedToken, uid, alreadyValidated);
 
       if (storedToken && uid) {
-        getStateCode(uid, storedToken)
-          .then(() => {
-            setValidated(true);
-            getCurrentUser(storedToken)
-              .then((response) => {
-                setUserRoles(response.roles.map((x) => x.name));
-                setCurrentUser(response);
-              })
-              .catch((err) => {
-                setNotification({
-                  message: err instanceof Error ? err.message : "Failed to load user",
-                  variant: "error",
-                });
-              });
-          })
-          .catch(() => setValidated(false));
+        if (alreadyValidated) {
+          // Just refresh user/roles; don't re-run validation or we'd briefly show Token modal
+          getCurrentUser(storedToken)
+            .then((response) => {
+              setUserRoles(response.roles.map((x) => x.name));
+              setCurrentUser(response);
+              setAllowedToUsePlugin(isAllowedEmail(response.email));
+            })
+            .catch(() => {});
+        } else {
+          getStateCode(uid, storedToken)
+            .then(() =>
+              getCurrentUser(storedToken).then(
+                (response) => {
+                  const allowed = isAllowedEmail(response.email);
+                  setCurrentUser(response);
+                  setUserRoles(response.roles.map((x) => x.name));
+                  setAllowedToUsePlugin(allowed);
+                  setValidated(allowed);
+                  if (!allowed) {
+                    setNotification({
+                      message: "You are not authorized to use this plugin. Only designated users can access it.",
+                      variant: "error",
+                    });
+                  }
+                },
+                (err) => {
+                  setNotification({
+                    message: err instanceof Error ? err.message : "Failed to load user",
+                    variant: "error",
+                  });
+                  setValidated(false);
+                }
+              )
+            )
+            .catch(() => setValidated(false));
+        }
       } else {
         setValidated(false);
       }
@@ -152,6 +188,8 @@ export function useFigmaAuth() {
     setInitLoading,
     setNotification,
     setParentCacheData,
+    setMinimized,
+    setAllowedToUsePlugin,
     setCurrentUser,
     setUserRoles,
   ]);

@@ -14,6 +14,8 @@ declare const __html__: string;
 const NODE_CACHE_MAX = 10_000;
 const UI_HEIGHT = 700;
 const UI_WIDTH = 900;
+/** Smallest allowed by Figma plugin API (min width 70). */
+const MINIMIZED_SIZE = 40;
 
 export let SIZES_COLL_ID =
   "VariableCollectionId:e42937af1d16769449ba78edbb8f49f3586a35e0/7366:525";
@@ -401,6 +403,14 @@ async function handleRemoveStorage(msg: { data: { key: string } }) {
 
 figma.ui.onmessage = async (msg: any) => {
   switch (msg.type) {
+    case "minimize":
+      figma.ui.resize(MINIMIZED_SIZE, MINIMIZED_SIZE);
+      figma.ui.postMessage({ type: "resized", minimized: true });
+      return;
+    case "maximize":
+      figma.ui.resize(UI_WIDTH, UI_HEIGHT);
+      figma.ui.postMessage({ type: "resized", minimized: false });
+      return;
     case "removeStorage":
       await handleRemoveStorage(msg);
       return;

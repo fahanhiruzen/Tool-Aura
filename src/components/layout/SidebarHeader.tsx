@@ -1,3 +1,8 @@
+import { Minimize2 } from "lucide-react";
+import { sendPluginResize } from "@/lib/figma-plugin";
+import { usePluginStore } from "@/stores";
+import { Button } from "@/components/ui/button";
+
 function ToolHubLogo() {
   return (
     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-foreground/5">
@@ -55,10 +60,26 @@ function ToolHubLogo() {
 }
 
 export function SidebarHeader() {
+  const setMinimized = usePluginStore((s) => s.setMinimized);
+  const handleMinimize = () => {
+    setMinimized(true);
+    sendPluginResize("minimize");
+  };
   return (
-    <div className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-      <ToolHubLogo />
-      <span className="text-lg font-semibold text-foreground">ToolHub</span>
+    <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b px-4">
+      <div className="flex items-center gap-3">
+        <ToolHubLogo />
+        <span className="text-lg font-semibold text-foreground">ToolHub</span>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="shrink-0"
+        onClick={handleMinimize}
+        title="Minimise"
+      >
+        <Minimize2 className="size-4" />
+      </Button>
     </div>
   );
 }

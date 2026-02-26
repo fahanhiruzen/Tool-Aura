@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useCurrentUserStore } from "./current-user-store";
+import { usePluginStore } from "./plugin-store";
 
 const FIGMA_TOKEN_KEY = "cddb_access_token";
 
@@ -76,6 +77,7 @@ export function signOut(): void {
   useAuthStore.getState().clearTokenOnly();
   clearTokenFromFigma();
   useCurrentUserStore.getState().clearCurrentUser();
+  usePluginStore.getState().setAllowedToUsePlugin(false);
 }
 
 export { FIGMA_TOKEN_KEY };

@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Maximize2 } from "lucide-react";
 import { AppLayout } from "@/components/layout";
 import { AuthGate } from "@/components/AuthGate";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -9,7 +10,9 @@ import { ResponsiveSuitePage } from "@/pages/ResponsiveSuitePage";
 import { TextGridsPage } from "@/pages/TextGridsPage";
 import { UserGroupsPage } from "@/pages/UserGroupsPage";
 import { GlobalSearchPage } from "@/pages/GlobalSearchPage";
-import { useNavigationStore } from "@/stores";
+import { sendPluginResize } from "@/lib/figma-plugin";
+import { useNavigationStore, usePluginStore } from "@/stores";
+import { Button } from "@/components/ui/button";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,14 +60,40 @@ function PageRouter() {
   }
 }
 
+function MinimizedView() {
+  const setMinimized = usePluginStore((s) => s.setMinimized);
+  const handleMaximize = () => {
+    setMinimized(false);
+    sendPluginResize("maximize");
+  };
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-muted/30">
+      <Button
+        variant="secondary"
+        size="icon"
+        className="h-full w-full rounded-none"
+        onClick={handleMaximize}
+        title="Maximise"
+      >
+        <Maximize2 className="size-5" />
+      </Button>
+    </div>
+  );
+}
+
 function App() {
+  const isMinimized = usePluginStore((s) => s.isMinimized);
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthGate>
-        <AppLayout>
-          <PageRouter />
-        </AppLayout>
-      </AuthGate>
+      {isMinimized ? (
+        <MinimizedView />
+      ) : (
+        <AuthGate>
+          <AppLayout>
+            <PageRouter />
+          </AppLayout>
+        </AuthGate>
+      )}
     </QueryClientProvider>
   );
 }
