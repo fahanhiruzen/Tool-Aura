@@ -2,9 +2,9 @@ import type { ChartSegment } from "@/api/types";
 import { cn } from "@/lib/utils";
 
 const DOT_COLOR: Record<string, string> = {
-  green: "#22c55e",
-  gray: "#e5e7eb",
-  red: "#ef4444",
+  green: "var(--chart-green)",
+  gray: "var(--chart-gray)",
+  red: "var(--chart-red)",
 };
 
 interface ChartLegendProps {

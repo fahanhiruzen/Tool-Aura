@@ -198,7 +198,7 @@ async function getFigmaData(
 
       if (mainComponent) {
         const key: any =
-          mainComponent?.parent?.key ?? (mainComponent as any)?.key;
+          (mainComponent?.parent as any)?.key ?? (mainComponent as any)?.key;
         temp = key && key in WIDGET_CLASSES ? WIDGET_CLASSES[key] : "CUSTOM";
       } else if (
         type !== "TEXT" &&
@@ -257,7 +257,7 @@ async function getFigmaData(
       };
     })
   );
-
+  console.log("figma.currentUser->", figma.currentUser);
   return {
     pageId: figma.currentPage.id,
     nodeId:
@@ -389,8 +389,26 @@ async function handleSetStorage(msg: { data: { key: string; value: any } }) {
   }
 }
 
+async function handleRemoveStorage(msg: { data: { key: string } }) {
+  if (msg.data?.key == null) return;
+  try {
+    await figma.clientStorage.deleteAsync(msg.data.key);
+    console.log("✅ CACHE DELETE - Key removed");
+  } catch (err) {
+    console.error("❌ CACHE DELETE - Storage error:", err);
+  }
+}
+
 figma.ui.onmessage = async (msg: any) => {
   switch (msg.type) {
+    case "removeStorage":
+      await handleRemoveStorage(msg);
+      return;
+    case "requestInit": {
+      const selectedLayerIds = figma.currentPage.selection.map((l) => l.id);
+      figma.ui.postMessage(await getFigmaData(true, selectedLayerIds));
+      return;
+    }
     case "getParentCache":
       await handleGetParentCache(msg);
       return;
@@ -477,7 +495,7 @@ async function figJetPluginInitiator() {
 
 function showUi() {
   figma.showUI(__html__, {
-    themeColors: false,
+    themeColors: true,
     height: UI_HEIGHT,
     width: UI_WIDTH,
   });

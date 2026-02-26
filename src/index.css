@@ -4,6 +4,10 @@
 
 @layer base {
   :root {
+    --chart-green: #22c55e;
+    --chart-gray: #d1d5db;
+    --chart-red: #ef4444;
+
     --background: 0 0% 98%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -27,6 +31,10 @@
   }
 
   .dark {
+    --chart-green: #22c55e;
+    --chart-gray: #4b5563;
+    --chart-red: #ef4444;
+
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;

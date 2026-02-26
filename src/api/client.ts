@@ -1,4 +1,14 @@
+import { useAuthStore } from "@/stores/auth-store";
+
 const BASE = import.meta.env.VITE_API_BASE ?? "/api";
+
+function getAuthHeader(): Record<string, string> {
+  const token = useAuthStore.getState().token;
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
+}
 
 export async function api<T>(
   path: string,
@@ -8,6 +18,7 @@ export async function api<T>(
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeader(),
       ...options?.headers,
     },
   });

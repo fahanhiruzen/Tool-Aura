@@ -67,7 +67,7 @@ export function EditPresetModal({
       }}
     >
       {/* Modal card */}
-      <div className="relative w-[340px] rounded-2xl bg-white px-6 pb-6 pt-5 shadow-xl">
+      <div className="relative w-[340px] rounded-2xl bg-card border border-border px-6 pb-6 pt-5 shadow-xl">
         {/* Close */}
         <button
           type="button"
@@ -80,7 +80,7 @@ export function EditPresetModal({
 
         {/* Icon */}
         <div className="mb-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted shadow-sm">
             <UserPlus className="h-5 w-5 text-foreground" />
           </div>
         </div>
@@ -110,12 +110,12 @@ export function EditPresetModal({
               <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
             </button>
             {dropdownOpen && available.length > 0 && (
-              <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-white shadow-md">
+              <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
                 {available.map((m) => (
                   <button
                     key={m.name}
                     type="button"
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                    className="w-full px-3 py-2 text-left text-sm text-popover-foreground hover:bg-muted"
                     onClick={() => addMember(m)}
                   >
                     <span className="font-medium">{m.name}</span>
@@ -172,7 +172,6 @@ export function EditPresetModal({
           <Button
             type="button"
             variant="outline"
-            className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700"
             onClick={onClose}
           >
             Cancel

@@ -1,46 +1,83 @@
-import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { ChevronsUpDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { signOut } from "@/stores";
+import { useCurrentUserStore } from "@/stores/current-user-store";
+import { useFigmaDataStore } from "@/stores/figma-data-store";
 
-const defaultUser = {
-  name: "Olivia Rhye",
-  email: "olivia@mercedes-benz.de",
-  avatar: null as string | null,
-};
+function isValidPhotoUrl(url: string | undefined): url is string {
+  return typeof url === "string" && url.length > 0 && url.startsWith("http");
+}
 
 export function UserProfileCard() {
+  const figmaUser = useFigmaDataStore((s) => s.data?.user ?? null);
+  const cddbUser = useCurrentUserStore((s) => s.currentUser);
+  const name = figmaUser?.name ?? cddbUser?.username ?? "Figma user";
+  const emailOrId =
+    cddbUser?.email ?? figmaUser?.id ?? "Not signed in to Figma";
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .filter(Boolean)
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "?";
+  const showPhoto = isValidPhotoUrl(figmaUser?.photoUrl);
+  const [photoError, setPhotoError] = useState(false);
+  const usePhoto = showPhoto && !photoError;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start gap-3 rounded-lg px-3 py-2 h-auto font-normal"
-          )}
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
-            {defaultUser.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
+          {/* Avatar with online dot */}
+          <div className="relative shrink-0">
+            {usePhoto ? (
+              <img
+                src={figmaUser!.photoUrl}
+                alt=""
+                className="h-9 w-9 rounded-full object-cover"
+                onError={() => setPhotoError(true)}
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+                {initials}
+              </div>
+            )}
+            <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
           </div>
-          <div className="flex flex-1 flex-col items-start text-left text-sm">
-            <span className="font-medium text-foreground">{defaultUser.name}</span>
-            <span className="text-xs text-muted-foreground">{defaultUser.email}</span>
+
+          {/* Name + CDDB email (or Figma id fallback); ellipsis + tooltip when long */}
+          <div className="flex min-w-0 flex-1 flex-col items-start text-left">
+            <span
+              className="w-full truncate text-sm font-semibold text-foreground leading-tight"
+              title={name}
+            >
+              {name}
+            </span>
+            <span
+              className="w-full truncate text-xs text-muted-foreground leading-tight"
+              title={emailOrId}
+            >
+              {emailOrId}
+            </span>
           </div>
-          <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
-        </Button>
+
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem>Profile</DropdownMenuItem>
         <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem>Sign out</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

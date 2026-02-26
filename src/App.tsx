@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout";
+import { AuthGate } from "@/components/AuthGate";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { ReleaseRequestsPage } from "@/pages/ReleaseRequestsPage";
 import { GettingStartedPage } from "@/pages/GettingStartedPage";
@@ -59,9 +60,11 @@ function PageRouter() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppLayout>
-        <PageRouter />
-      </AppLayout>
+      <AuthGate>
+        <AppLayout>
+          <PageRouter />
+        </AppLayout>
+      </AuthGate>
     </QueryClientProvider>
   );
 }
