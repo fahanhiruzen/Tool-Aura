@@ -1,0 +1,19 @@
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+
+export function ReleaseRequestsHeader() {
+  return (
+    <div className="flex items-start justify-between px-6 pt-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Release Requests</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Validate Metadata and create a release.
+        </p>
+      </div>
+      <Button className="gap-2">
+        <Plus className="h-4 w-4" />
+        Create Release Request
+      </Button>
+    </div>
+  );
+}
