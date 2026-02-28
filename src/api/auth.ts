@@ -1,10 +1,32 @@
+import { api } from "@/api/client";
+
 export const PROD_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
+
+export interface IAuth {
+  accessToken: string;
+}
+
+export async function getAccessToken(userId: string): Promise<IAuth> {
+  return api<IAuth>(`/figma/access_token?userId=${encodeURIComponent(userId)}`);
+}
 
 export interface IStateCodeResponse {
   state: string;
   userId: string;
 }
 
+
+export const handleAllowFigmaPermission = (state: string): void => {
+  const authorizationUrl =
+    "https://www.figma.com/oauth?" +
+    "response_type=code" +
+    "&client_id=iQVYzmXcwgP3NaGTc40Waz" +
+    `&redirect_uri=${PROD_URL}/figma/callback` +
+    `&state=${state}` +
+    "&scope=current_user:read,file_comments:read,file_content:read,file_metadata:read,file_versions:read,file_variables:read,library_assets:read,library_content:read,team_library_content:read,file_dev_resources:read,projects:read,webhooks:read,webhooks:write";
+
+  window.open(authorizationUrl, "_blank");
+};
 /**
  * Validates the token by calling the figma state endpoint.
  * Use this to check if the user added a valid token.

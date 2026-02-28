@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { presetApi } from "@/api/preset";
 import { usePluginStore } from "@/stores/plugin-store";
 
@@ -11,6 +11,7 @@ export function usePresets(params: {
   return useQuery({
     queryKey: ["presets", params],
     queryFn: () => presetApi.fetchPresets(params),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -1,9 +1,9 @@
-import { useAuthStore } from "@/stores/auth-store";
+import { useFigmaDataStore } from "@/stores/figma-data-store";
 
-const BASE = import.meta.env.VITE_API_BASE ?? "https://cddb3.uici-int.i.mercedes-benz.com/cddb/api";
+const BASE = import.meta.env.VITE_API_BASE ?? "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
 
 function getAuthHeader(): Record<string, string> {
-  const token = useAuthStore.getState().token;
+  const token = useFigmaDataStore.getState().data?.cddbToken;
   if (token) {
     return { Authorization: `Bearer ${token}` };
   }
@@ -22,7 +22,17 @@ export async function api<T>(
       ...options?.headers,
     },
   });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    let message = text;
+    try {
+      const json = JSON.parse(text) as { error?: string };
+      if (typeof json?.error === "string") message = json.error;
+    } catch {
+      /* use raw text */
+    }
+    throw new Error(message);
+  }
   if (res.status === 204 || res.headers.get("content-length") === "0") {
     return undefined as T;
   }

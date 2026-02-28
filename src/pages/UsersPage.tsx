@@ -11,7 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatUsername, formatRoleName } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useManagedUsers,
   useRoles,
@@ -19,7 +20,7 @@ import {
 } from "@/hooks/use-user-management";
 import type { ICurrentUser, IRole } from "@/api/user-management";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 7;
 
 // ─── Edit Roles Modal ────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ function EditRolesModal({
   isLoading,
 }: EditRolesModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>(
-    user.roles.map((r) => r.id)
+    user.roles.map((r) => r.name)
   );
 
   function toggle(id: string) {
@@ -75,12 +76,12 @@ function EditRolesModal({
           Edit Roles
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          {user.username} &middot; {user.email}
+          {formatUsername(user.username)} &middot; {user.email}
         </p>
 
         <div className="mb-5 space-y-2 max-h-60 overflow-y-auto">
           {allRoles.map((role) => {
-            const checked = selectedIds.includes(role.id);
+            const checked = selectedIds.includes(role.name);
             return (
               <label
                 key={role.id}
@@ -95,10 +96,10 @@ function EditRolesModal({
                   type="checkbox"
                   className="h-4 w-4 rounded accent-primary"
                   checked={checked}
-                  onChange={() => toggle(role.id)}
+                  onChange={() => toggle(role.name)}
                 />
                 <span className="text-sm font-medium text-foreground">
-                  {role.name}
+                  {formatRoleName(role.name)}
                 </span>
               </label>
             );
@@ -137,7 +138,7 @@ interface RoleFilterProps {
 
 function RoleFilter({ roles, selected, onChange }: RoleFilterProps) {
   const [open, setOpen] = useState(false);
-  const label = roles.find((r) => r.id === selected)?.name ?? "All Roles";
+  const label = roles.find((r) => r.name === selected)?.name ?? "All Roles";
 
   return (
     <div className="relative">
@@ -166,14 +167,14 @@ function RoleFilter({ roles, selected, onChange }: RoleFilterProps) {
           </button>
           {roles.map((r) => (
             <button
-              key={r.id}
+              key={r.name}
               type="button"
               className={cn(
                 "w-full px-3 py-2 text-left text-sm text-popover-foreground hover:bg-muted",
-                selected === r.id && "bg-muted font-medium"
+                selected === r.name && "bg-muted font-medium"
               )}
               onClick={() => {
-                onChange(r.id);
+                onChange(r.name);
                 setOpen(false);
               }}
             >
@@ -209,7 +210,10 @@ export function UsersPage() {
 
   async function handleSaveRoles(roleIds: string[]) {
     if (!editingUser) return;
-    await updateRoles.mutateAsync({ username: editingUser.username, roleIds });
+    await updateRoles.mutateAsync({
+      email: editingUser.email,
+      roles: roleIds,
+    });
     setEditingUser(null);
   }
 
@@ -255,11 +259,8 @@ export function UsersPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-background">
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-44">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-64 min-w-[12rem]">
                   Username
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Email
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                   Roles
@@ -269,14 +270,20 @@ export function UsersPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    Loading...
-                  </td>
-                </tr>
+                Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <tr key={i} className="border-b border-border last:border-b-0">
+                    <td className="px-4 py-3.5 w-64 min-w-[12rem]">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="flex gap-1.5">
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5" />
+                  </tr>
+                ))
               ) : isError ? (
                 <tr>
                   <td
@@ -301,14 +308,9 @@ export function UsersPage() {
                     key={user.id}
                     className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm font-semibold text-foreground">
-                        {user.username}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm text-muted-foreground">
-                        {user.email}
+                    <td className="px-4 py-3.5 w-64 min-w-[12rem]">
+                      <p className="text-sm font-semibold text-foreground truncate" title={user.username}>
+                        {formatUsername(user.username)}
                       </p>
                     </td>
                     <td className="px-4 py-3.5">
@@ -324,7 +326,7 @@ export function UsersPage() {
                               variant="secondary"
                               className="text-xs font-normal"
                             >
-                              {role.name}
+                              {formatRoleName(role.name)}
                             </Badge>
                           ))
                         )}

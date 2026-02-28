@@ -18,6 +18,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { cn, formatUsername } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   CreatePresetModal,
   type CreatePresetPayload,
@@ -34,7 +35,6 @@ import {
 } from "@/hooks/use-presets";
 import { TEAMS } from "@/lib/constants";
 import type { IPreset } from "@/api/preset";
-import { usePluginStore } from "@/stores/plugin-store";
 
 const PAGE_SIZE = 10;
 
@@ -221,14 +221,24 @@ export function UserGroupsPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    Loading...
-                  </td>
-                </tr>
+                Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <tr key={i} className="border-b border-border last:border-b-0">
+                    <td className="px-4 py-3.5 align-top">
+                      <Skeleton className="h-4 w-28 mb-1.5" />
+                      <Skeleton className="h-3 w-16" />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-36" />
+                        <Skeleton className="h-4 w-28" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3.5" />
+                  </tr>
+                ))
               ) : isError ? (
                 <tr>
                   <td

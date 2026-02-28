@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { userManagementApi } from "@/api/user-management";
+import { usePluginStore } from "@/stores/plugin-store";
 
 export function useManagedUsers(params: {
   pageNumber: number;
@@ -16,6 +17,7 @@ export function useManagedUsers(params: {
         params.role,
         params.search
       ),
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -41,13 +43,19 @@ export function useUpdateUserRoles() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      username,
-      roleIds,
+      email,
+      roles,
     }: {
-      username: string;
-      roleIds: string[];
-    }) => userManagementApi.updateUserRoles(username, roleIds),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["managed-users"] }),
+      email: string;
+      roles: string[];
+    }) => userManagementApi.updateUserRoles(email, roles),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["managed-users"] });
+      usePluginStore.getState().setNotification({
+        variant: "success",
+        message: "User roles updated successfully.",
+      });
+    },
   });
 }
 
@@ -66,6 +74,7 @@ export function useUserRequests(params: {
         params.status,
         params.search
       ),
+    placeholderData: keepPreviousData,
   });
 }
 

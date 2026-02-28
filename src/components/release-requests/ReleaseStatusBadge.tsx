@@ -31,7 +31,7 @@ export function ReleaseStatusBadge({
   return (
     <Badge
       variant="outline"
-      className={cn("font-normal", variantClass, className)}
+      className={cn("font-normal whitespace-nowrap", variantClass, className)}
     >
       {label}
     </Badge>

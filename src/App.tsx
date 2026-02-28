@@ -1,4 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  MutationCache,
+  QueryCache,
+} from "@tanstack/react-query";
 import { Maximize2 } from "lucide-react";
 import { AppLayout } from "@/components/layout";
 import { AuthGate } from "@/components/AuthGate";
@@ -12,12 +17,29 @@ import { UserGroupsPage } from "@/pages/UserGroupsPage";
 import { GlobalSearchPage } from "@/pages/GlobalSearchPage";
 import { UsersPage } from "@/pages/UsersPage";
 import { RoleRequestsPage } from "@/pages/RoleRequestsPage";
+import { WidgetPage } from "@/pages/WidgetPage";
 import { sendPluginResize } from "@/lib/figma-plugin";
 import { useNavigationStore, usePluginStore } from "@/stores";
+import { NAV_WIDGET_CHILDREN } from "@/components/layout/SidebarNav";
 import { Button } from "@/components/ui/button";
 import { NotificationToast } from "@/components/NotificationToast";
 
+function showErrorNotification(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Something went wrong.";
+  usePluginStore.getState().setNotification({
+    variant: "error",
+    message,
+  });
+}
+
 const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onError: showErrorNotification,
+  }),
+  queryCache: new QueryCache({
+    onError: showErrorNotification,
+  }),
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
@@ -38,6 +60,11 @@ function PlaceholderPage({ id }: { id: string | null }) {
 
 function PageRouter() {
   const activeId = useNavigationStore((s) => s.activeId);
+
+  const widgetChild = NAV_WIDGET_CHILDREN.find((w) => w.id === activeId);
+  if (widgetChild) {
+    return <WidgetPage widgetId={widgetChild.id} widgetLabel={widgetChild.label} />;
+  }
 
   switch (activeId) {
     case "dashboard":

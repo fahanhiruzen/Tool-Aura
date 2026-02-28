@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 interface IPostMetaData {
   figmaElementId: string;
   documentKey: string;
@@ -30,26 +30,21 @@ interface IMetaDataResponse extends IPostMetaData {
   userStory: string | null;
   uniqueId:string;
 }
-export const BASE_URL = "https://cddb3.uici-int.i.mercedes-benz.com/cddb/api";
+export const BASE_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
 // export const BASE_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
 export const getFigmaInstance = async (
   documentKey: string,
   figmaInstanceId: string,
   token: string
 ): Promise<IMetaDataResponse> => {
-  const response = await fetch(
+  const { data } = await axios.get<IMetaDataResponse>(
     `${BASE_URL}/v3/figma-document/${documentKey}/figma-element/${figmaInstanceId}`,
     {
-      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }
   );
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  return response.json(); // Assuming the response is JSON
+  return data;
 };

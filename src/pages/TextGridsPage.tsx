@@ -37,14 +37,14 @@ const GRID_FILTERS = ["IC Grids", "HU Grids", "RSE Grids"];
 function ChangeBadge({ type }: { type: ChangeType }) {
   if (type === "upload") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 border border-blue-200">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-400">
         <Upload className="h-3 w-3" />
         Upload
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 border border-violet-200">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600 border border-violet-200 dark:bg-violet-950/30 dark:border-violet-800 dark:text-violet-400">
       <Download className="h-3 w-3" />
       Download
     </span>
@@ -191,7 +191,7 @@ export function TextGridsPage() {
       <div className="grid grid-cols-2 gap-3 px-6 pt-5">
         <button
           type="button"
-          className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-100 transition-colors dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-400 dark:hover:bg-blue-950/50"
         >
           <Upload className="h-4 w-4" />
           Upload grids.xml

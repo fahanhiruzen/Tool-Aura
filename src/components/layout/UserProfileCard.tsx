@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut, useNavigationStore } from "@/stores";
-import { useCurrentUserStore } from "@/stores/current-user-store";
+import { useCurrentCDDBUserStore } from "@/stores/current-user-store";
 import { useFigmaDataStore } from "@/stores/figma-data-store";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -17,14 +17,14 @@ function isValidPhotoUrl(url: string | undefined): url is string {
 
 export function UserProfileCard() {
   const figmaUser = useFigmaDataStore((s) => s.data?.user ?? null);
-  const cddbUser = useCurrentUserStore((s) => s.currentUser);
+  const cddbUser = useCurrentCDDBUserStore((s) => s.currentUser);
   const isCollapsed = useNavigationStore((s) => s.isSidebarCollapsed);
   const name = figmaUser?.name ?? cddbUser?.username ?? "Figma user";
   const emailOrId =
     cddbUser?.email ?? figmaUser?.id ?? "Not signed in to Figma";
   const initials = name
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .filter(Boolean)
     .join("")
     .toUpperCase()

@@ -57,10 +57,10 @@ export const userManagementApi = {
 
   getRoles: () => api<IRole[]>("/role"),
 
-  updateUserRoles: (username: string, roleIds: string[]) =>
-    api<boolean>(`/user/${username}/role`, {
+  updateUserRoles: (email: string, roles: string[]) =>
+    api<void>(`/user/${encodeURIComponent(email)}/role`, {
       method: "PUT",
-      body: JSON.stringify(roleIds),
+      body: JSON.stringify(roles),
     }),
 
   getUserRequests: (

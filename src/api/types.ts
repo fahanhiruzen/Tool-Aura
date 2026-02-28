@@ -40,6 +40,12 @@ export type ReleaseProgress =
 
 export type ReleaseRequestStatus = "completed" | "in_progress";
 
+export interface Reviewer {
+  userEmail: string;
+  approved: boolean;
+  reviewerNotes: string;
+}
+
 export interface ReleaseRequest {
   id: string;
   document: string;
@@ -47,6 +53,7 @@ export interface ReleaseRequest {
   createdAt: string;
   progress: ReleaseProgress;
   status: ReleaseRequestStatus;
+  reviewers: Reviewer[];
 }
 
 export interface ToReviewRequest {

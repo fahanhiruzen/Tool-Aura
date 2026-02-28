@@ -11,14 +11,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn, formatUsername, formatRoleName } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useUserRequests,
   useUpdateUserRequest,
 } from "@/hooks/use-user-management";
 import type { IRequest } from "@/api/user-management";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 type StatusFilter = "ALL" | "REQUESTED" | "APPROVED" | "REJECTED";
 
@@ -52,6 +58,115 @@ function RequestStatusBadge({
     <Badge variant="outline" className={cn("font-normal text-xs", className)}>
       {label}
     </Badge>
+  );
+}
+
+// ─── User Details Modal ───────────────────────────────────────────────────────
+
+interface UserDetailsModalProps {
+  request: IRequest;
+  onClose: () => void;
+}
+
+function UserDetailsModal({ request, onClose }: UserDetailsModalProps) {
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-[700px] max-h-[90vh] overflow-y-auto rounded-2xl bg-card border border-border px-6 pb-6 pt-5 shadow-xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <h2 className="mb-4 text-lg font-semibold text-foreground pr-8">
+          User details
+        </h2>
+        <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          <div>
+            <dt className="text-muted-foreground font-medium">Username</dt>
+            <dd className="mt-0.5 text-foreground">{formatUsername(request.username)}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground font-medium">Email</dt>
+            <dd className="mt-0.5 text-foreground">{request.email}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground font-medium">Role requested</dt>
+            <dd className="mt-0.5">
+              <Badge variant="secondary" className="text-xs font-normal">
+                {formatRoleName(request.requestedRole)}
+              </Badge>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground font-medium">Status</dt>
+            <dd className="mt-0.5">
+              <RequestStatusBadge status={request.status} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground font-medium">Requested at</dt>
+            <dd className="mt-0.5 text-foreground">
+              {formatDate(request.createdAt)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground font-medium">Last updated</dt>
+            <dd className="mt-0.5 text-foreground">
+              {formatDate(request.modifiedAt)}
+            </dd>
+          </div>
+          <div className="col-span-2">
+            <dt className="text-muted-foreground font-medium">Current roles</dt>
+            <dd className="mt-0.5 flex flex-wrap gap-1">
+              {request.currentRoles.length === 0 ? (
+                <span className="text-muted-foreground">None</span>
+              ) : (
+                request.currentRoles.map((role) => (
+                  <Badge
+                    key={role.id}
+                    variant="outline"
+                    className="text-xs font-normal"
+                  >
+                    {formatRoleName(role.name)}
+                  </Badge>
+                ))
+              )}
+            </dd>
+          </div>
+          {request.message != null && request.message !== "" && (
+            <div className="col-span-2">
+              <dt className="text-muted-foreground font-medium">Message</dt>
+              <dd className="mt-0.5 text-foreground">{request.message}</dd>
+            </div>
+          )}
+        </dl>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-5 w-full"
+          onClick={onClose}
+        >
+          Close
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -116,7 +231,7 @@ function ReviewModal({
           <span className="font-medium text-foreground">{request.username}</span>{" "}
           is requesting the{" "}
           <span className="font-medium text-foreground">
-            {request.requestedRole}
+            {formatRoleName(request.requestedRole)}
           </span>{" "}
           role.
         </p>
@@ -185,6 +300,8 @@ export function RoleRequestsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [page, setPage] = useState(1);
+  const [userDetailRequest, setUserDetailRequest] =
+    useState<IRequest | null>(null);
   const [reviewTarget, setReviewTarget] = useState<{
     request: IRequest;
     action: "APPROVED" | "REJECTED";
@@ -209,14 +326,6 @@ export function RoleRequestsPage() {
       data: { status: reviewTarget.action, message },
     });
     setReviewTarget(null);
-  }
-
-  function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
   }
 
   return (
@@ -275,46 +384,46 @@ export function RoleRequestsPage() {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto px-6 pt-3 pb-2">
+      <div className="flex-1 min-h-0 overflow-auto px-6 pt-3 pb-2">
         <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-border bg-background">
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-36">
-                  Username
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-[26%]">
+                  User Name
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Email
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-[44%]">
+                  Role Requested
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-36">
-                  Requested Role
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Current Roles
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-28">
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-[18%]">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground w-28">
-                  Date
-                </th>
-                <th className="px-4 py-3 w-24" />
+                <th className="px-4 py-3 w-[12%]" />
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-4 py-8 text-center text-sm text-muted-foreground"
-                  >
-                    Loading...
-                  </td>
-                </tr>
+                Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <tr key={i} className="border-b border-border last:border-b-0">
+                    <td className="px-4 py-3.5">
+                      <div className="flex flex-col gap-1.5">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-3 w-6" />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Skeleton className="h-5 w-36 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3.5" />
+                  </tr>
+                ))
               ) : isError ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={4}
                     className="px-4 py-8 text-center text-sm text-destructive"
                   >
                     Failed to load role requests.
@@ -323,94 +432,91 @@ export function RoleRequestsPage() {
               ) : requests.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={4}
                     className="px-4 py-8 text-center text-sm text-muted-foreground"
                   >
                     No role requests found.
                   </td>
                 </tr>
               ) : (
-                requests.map((req) => (
-                  <tr
-                    key={req.requestId}
-                    className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm font-semibold text-foreground">
-                        {req.username}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="text-sm text-muted-foreground">
-                        {req.email}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <Badge variant="secondary" className="text-xs font-normal">
-                        {req.requestedRole}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex flex-wrap gap-1.5">
-                        {req.currentRoles.length === 0 ? (
-                          <span className="text-xs text-muted-foreground">
-                            None
-                          </span>
-                        ) : (
-                          req.currentRoles.map((role) => (
-                            <Badge
-                              key={role.id}
-                              variant="outline"
-                              className="text-xs font-normal"
-                            >
-                              {role.name}
-                            </Badge>
-                          ))
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <RequestStatusBadge status={req.status} />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(req.createdAt)}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      {req.status === "REQUESTED" && (
-                        <div className="flex items-center justify-end gap-2">
+                requests.map((req) => {
+                  const currentRoleNames =
+                    req.currentRoles.map((r) => r.name).join(", ") || "None";
+                  return (
+                    <tr
+                      key={req.requestId}
+                      className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3.5 min-w-0">
+                        <div className="flex flex-col gap-0.5 min-w-0">
                           <button
                             type="button"
-                            aria-label="Approve"
-                            onClick={() =>
-                              setReviewTarget({
-                                request: req,
-                                action: "APPROVED",
-                              })
-                            }
-                            className="flex h-7 w-7 items-center justify-center rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                            onClick={() => setUserDetailRequest(req)}
+                            className="text-left text-sm font-semibold text-primary hover:underline focus:outline-none focus:underline truncate"
                           >
-                            <Check className="h-3.5 w-3.5" />
+                            {formatUsername(req.username)}
                           </button>
-                          <button
-                            type="button"
-                            aria-label="Reject"
-                            onClick={() =>
-                              setReviewTarget({
-                                request: req,
-                                action: "REJECTED",
-                              })
-                            }
-                            className="flex h-7 w-7 items-center justify-center rounded-md border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                          >
-                            <Ban className="h-3.5 w-3.5" />
-                          </button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs text-muted-foreground truncate">
+                                ({req.currentRoles.length})
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[280px]">
+                              <p className="font-medium mb-1">Current roles</p>
+                              <p className="text-muted-foreground">
+                                {currentRoleNames}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-4 py-3.5 min-w-0">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs font-normal truncate max-w-full"
+                        >
+                          {formatRoleName(req.requestedRole)}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <RequestStatusBadge status={req.status} />
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {req.status === "REQUESTED" && (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              aria-label="Approve"
+                              onClick={() =>
+                                setReviewTarget({
+                                  request: req,
+                                  action: "APPROVED",
+                                })
+                              }
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-emerald-300 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label="Reject"
+                              onClick={() =>
+                                setReviewTarget({
+                                  request: req,
+                                  action: "REJECTED",
+                                })
+                              }
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                            >
+                              <Ban className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -441,6 +547,13 @@ export function RoleRequestsPage() {
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
+
+      {userDetailRequest && (
+        <UserDetailsModal
+          request={userDetailRequest}
+          onClose={() => setUserDetailRequest(null)}
+        />
+      )}
 
       {reviewTarget && (
         <ReviewModal

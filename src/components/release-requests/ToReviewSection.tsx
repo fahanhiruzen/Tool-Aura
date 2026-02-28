@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { ToReviewRequest } from "@/api/types";
+import { ToReviewTable } from "./ToReviewTable";
+import type { ReleaseRequestItem } from "@/api/release-request";
 
 interface ToReviewSectionProps {
-  items: ToReviewRequest[];
+  items: ReleaseRequestItem[];
 }
 
 export function ToReviewSection({ items }: ToReviewSectionProps) {
@@ -39,21 +40,10 @@ export function ToReviewSection({ items }: ToReviewSectionProps) {
 
       {/* Expanded content */}
       {isOpen && (
-        <div className="border-t px-5 pb-4 pt-3">
-          <ul className="space-y-2">
-            {items.map((item) => (
-              <li
-                key={item.id}
-                className="flex items-center justify-between rounded-lg border px-4 py-3 text-sm"
-              >
-                <span className="font-medium">{item.title}</span>
-                <span className="text-muted-foreground">{item.assignedAt}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="border-t px-5 pb-5 pt-4">
+          <ToReviewTable items={items} />
         </div>
       )}
     </div>
   );
 }
-

@@ -1,19 +1,14 @@
 import { create } from "zustand";
 import type { ICurrentUser } from "@/api/user";
 
-interface CurrentUserState {
+interface CurrentCDDBUserState {
   currentUser: ICurrentUser | null;
-  userRoles: string[];
   setCurrentUser: (user: ICurrentUser | null) => void;
-  setUserRoles: (roles: string[]) => void;
-  /** Clear current user and roles (e.g. on sign out). */
   clearCurrentUser: () => void;
 }
 
-export const useCurrentUserStore = create<CurrentUserState>((set) => ({
+export const useCurrentCDDBUserStore = create<CurrentCDDBUserState>((set) => ({
   currentUser: null,
-  userRoles: [],
-  setCurrentUser: (currentUser) => set({ currentUser }),
-  setUserRoles: (userRoles) => set({ userRoles }),
-  clearCurrentUser: () => set({ currentUser: null, userRoles: [] }),
+  setCurrentUser: (user: ICurrentUser | null) => set({ currentUser: user }),
+  clearCurrentUser: () => set({ currentUser: null}),
 }));

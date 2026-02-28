@@ -1,15 +1,10 @@
-import { useState, useMemo } from "react";
-import { Search, Pencil, HelpCircle } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, ExternalLink, HelpCircle, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ReleaseStatusBadge } from "./ReleaseStatusBadge";
 import type { ReleaseRequest } from "@/api/types";
-import { cn } from "@/lib/utils";
 
-const PROGRESS_COLOR: Record<string, string> = {
-  "Release Created": "text-emerald-600",
-  Ready: "text-emerald-600",
-  "Waiting for Review": "text-amber-600",
-};
+const PAGE_SIZE = 5;
 
 interface ReleaseRequestRowProps {
   request: ReleaseRequest;
@@ -17,9 +12,6 @@ interface ReleaseRequestRowProps {
 
 function ReleaseRequestRow({ request }: ReleaseRequestRowProps) {
   const hasLink = request.domainName !== null;
-  const progressColor =
-    PROGRESS_COLOR[request.progress] ?? "text-muted-foreground";
-
   return (
     <tr className="border-b last:border-b-0 hover:bg-muted/30 transition-colors">
       {/* Document */}
@@ -54,41 +46,90 @@ function ReleaseRequestRow({ request }: ReleaseRequestRowProps) {
         })()}
       </td>
 
-      {/* Progress */}
-      <td className={cn("px-4 py-3 text-sm font-medium", progressColor)}>
-        {request.progress}
-      </td>
-
-      {/* Status */}
+      {/* Release */}
       <td className="px-4 py-3">
         <ReleaseStatusBadge status={request.status} />
       </td>
 
+      {/* Review Status */}
+      <td className="px-4 py-3 text-sm font-medium">
+        {(() => {
+          const reviewers = request.reviewers ?? [];
+          if (reviewers.length === 0) {
+            return <span className="text-muted-foreground whitespace-nowrap">No Reviewers</span>;
+          }
+          const approved = reviewers.some((r) => r.approved);
+          return approved ? (
+            <span className="text-emerald-600">Approved</span>
+          ) : (
+            <span className="text-red-500">Rejected</span>
+          );
+        })()}
+      </td>
+
       {/* Action */}
       <td className="px-4 py-3 text-right">
-        {hasLink ? (
-          <button
-            type="button"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            Open
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Edit"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={!hasLink}
+          aria-label="Open document"
+          onClick={() => hasLink && window.open(request.domainName!, "_blank")}
+          className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          <ExternalLink className="h-4 w-4" />
+        </button>
       </td>
     </tr>
   );
 }
 
-type SortKey = "document" | "createdAt" | "progress" | "status";
-type SortDir = "asc" | "desc";
+// ---------------------------------------------------------------------------
+// Pagination
+// ---------------------------------------------------------------------------
+
+function PaginationControls({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-end gap-2 pt-2">
+      <button
+        type="button"
+        disabled={page === 0}
+        onClick={() => onPageChange(page - 1)}
+        className="rounded p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        aria-label="Previous page"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <span className="text-xs text-muted-foreground">
+        {page + 1} / {totalPages}
+      </span>
+      <button
+        type="button"
+        disabled={page >= totalPages - 1}
+        onClick={() => onPageChange(page + 1)}
+        className="rounded p-1 hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        aria-label="Next page"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Table
+// ---------------------------------------------------------------------------
+
+export type SortKey = "document" | "createdAt" | "progress" | "status";
+export type SortDir = "asc" | "desc";
 
 interface ReleaseRequestsTableProps {
   requests: ReleaseRequest[];
@@ -98,34 +139,42 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [page, setPage] = useState(0);
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(0);
+  }
+
+  function handleSort(key: SortKey) {
+    const nextDir =
+      key === sortKey ? (sortDir === "asc" ? "desc" : "asc") : "asc";
+    setSortKey(key);
+    setSortDir(nextDir);
+    setPage(0);
+  }
 
   const filtered = useMemo(() => {
+    if (!search.trim()) return requests;
     const q = search.toLowerCase();
     return requests.filter(
       (r) =>
-        r.document.toLowerCase().includes(q) ||
-        (r.domainName?.toLowerCase().includes(q) ?? false) ||
-        r.progress.toLowerCase().includes(q)
+        r.document?.toLowerCase().includes(q) ||
+        r.domainName?.toLowerCase().includes(q),
     );
   }, [requests, search]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
-      const av = a[sortKey] ?? "";
-      const bv = b[sortKey] ?? "";
+      const av = (a as unknown as Record<string, unknown>)[sortKey] ?? "";
+      const bv = (b as unknown as Record<string, unknown>)[sortKey] ?? "";
       const cmp = String(av).localeCompare(String(bv));
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir]);
 
-  function handleSort(key: SortKey) {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-  }
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   const SortIcon = ({ col }: { col: SortKey }) => (
     <span className="ml-1 text-muted-foreground">
@@ -142,7 +191,7 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
           placeholder="Search"
           className="pl-9"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
         />
       </div>
 
@@ -166,7 +215,7 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
                   className="flex items-center hover:text-foreground"
                   onClick={() => handleSort("createdAt")}
                 >
-                  Created at
+                  Created At
                   <HelpCircle className="ml-1 h-3 w-3" />
                   <SortIcon col="createdAt" />
                 </button>
@@ -175,25 +224,27 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
                 <button
                   type="button"
                   className="flex items-center hover:text-foreground"
-                  onClick={() => handleSort("progress")}
+                  onClick={() => handleSort("status")}
                 >
-                  Progress <SortIcon col="progress" />
+                  Release <SortIcon col="status" />
                 </button>
               </th>
               <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">
                 <button
                   type="button"
                   className="flex items-center hover:text-foreground"
-                  onClick={() => handleSort("status")}
+                  onClick={() => handleSort("progress")}
                 >
-                  Status <SortIcon col="status" />
+                  Review Status <SortIcon col="progress" />
                 </button>
               </th>
-              <th className="px-4 py-2.5" />
+              <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
-            {sorted.length === 0 ? (
+            {paginated.length === 0 ? (
               <tr>
                 <td
                   colSpan={5}
@@ -203,11 +254,19 @@ export function ReleaseRequestsTable({ requests }: ReleaseRequestsTableProps) {
                 </td>
               </tr>
             ) : (
-              sorted.map((r) => <ReleaseRequestRow key={r.id} request={r} />)
+              paginated.map((r: ReleaseRequest) => (
+                <ReleaseRequestRow key={r.id} request={r} />
+              ))
             )}
           </tbody>
         </table>
       </div>
+
+      <PaginationControls
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

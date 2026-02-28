@@ -57,45 +57,6 @@ export const mockReleaseRequests: ReleaseRequestsData = {
     },
   ],
   createdByMe: [
-    {
-      id: "cr-1",
-      document: "[Other Docum...",
-      domainName: "[Domain Name]",
-      createdAt: "12/20/25 12:20 pm",
-      progress: "Release Created",
-      status: "completed",
-    },
-    {
-      id: "cr-2",
-      document: "[Other Docum...",
-      domainName: "[Domain Name]",
-      createdAt: "12/20/25 12:20 pm",
-      progress: "Ready",
-      status: "in_progress",
-    },
-    {
-      id: "cr-3",
-      document: "This Document",
-      domainName: null,
-      createdAt: "12/20/25 12:20 pm",
-      progress: "Ready",
-      status: "in_progress",
-    },
-    {
-      id: "cr-4",
-      document: "[Other Docum...",
-      domainName: "[Domain Name]",
-      createdAt: "12/20/25 12:20 pm",
-      progress: "Ready",
-      status: "in_progress",
-    },
-    {
-      id: "cr-5",
-      document: "This Document",
-      domainName: null,
-      createdAt: "12/20/25 12:20 pm",
-      progress: "Waiting for Review",
-      status: "in_progress",
-    },
+
   ],
 };

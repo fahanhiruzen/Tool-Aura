@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X, ChevronDown, UserPlus, User, Building2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn, formatUsername } from "@/lib/utils";
 import { useAllUsers } from "@/hooks/use-user-management";
 import { TEAMS } from "@/lib/constants";
 import type { IPreset } from "@/api/preset";
@@ -172,7 +172,7 @@ export function EditPresetModal({
                         className="w-full px-3 py-2 text-left text-sm text-popover-foreground hover:bg-muted"
                         onClick={() => addUser(u.id)}
                       >
-                        <span className="font-medium">{u.username}</span>
+                        <span className="font-medium">{formatUsername(u.username)}</span>
                         <span className="ml-1.5 text-muted-foreground text-xs">
                           {u.email}
                         </span>

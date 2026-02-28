@@ -1,8 +1,10 @@
 import { create } from "zustand";
-import { useCurrentUserStore } from "./current-user-store";
 import { usePluginStore } from "./plugin-store";
+import { useFigmaDataStore } from "./figma-data-store";
+import { useCurrentCDDBUserStore } from "./current-user-store";
 
-const FIGMA_TOKEN_KEY = "cddb_access_token";
+const FIGMA_TOKEN_KEY = "figma_access_token";
+const CDDB_TOKEN_KEY = "cddb_access_token";
 
 export interface AuthState {
   token: string | null;
@@ -33,12 +35,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token: null, userId: null, isValidated: false }),
 }));
 
-/**
- * Persist token to Figma plugin cache (clientStorage).
- * Call this from the UI via postMessage to the plugin main thread.
- */
-export function persistTokenToFigma(token: string): void {
-  try {
+
+export function persistCddbTokenToFigma(token: string): void {
+    const parent = window.parent;
+    if (parent && parent !== window) {
+      parent.postMessage(
+        { pluginMessage: { data: { key: CDDB_TOKEN_KEY, value: token } } },
+        "*"
+      );
+    }
+}
+
+export function persistFigmaAccessTokenToFigma(token: string): void {
     const parent = window.parent;
     if (parent && parent !== window) {
       parent.postMessage(
@@ -46,27 +54,21 @@ export function persistTokenToFigma(token: string): void {
         "*"
       );
     }
-  } catch {
-    // Not in Figma iframe
-  }
-}
+  } 
 
 /**
  * Remove token from Figma plugin cache (clientStorage).
  * Call this on sign out so the token is cleared from cache and Zustand.
  */
 export function clearTokenFromFigma(): void {
-  try {
+  
     const parent = window.parent;
     if (parent && parent !== window) {
       parent.postMessage(
-        { pluginMessage: { type: "removeStorage", data: { key: FIGMA_TOKEN_KEY } } },
+        { pluginMessage: { type: "remove_storage", data: { key: FIGMA_TOKEN_KEY } } },
         "*"
       );
     }
-  } catch {
-    // Not in Figma iframe
-  }
 }
 
 /**
@@ -74,13 +76,13 @@ export function clearTokenFromFigma(): void {
  * All other Figma-provided data (userId, figma data store, etc.) is left unchanged.
  */
 export function signOut(): void {
-  useAuthStore.getState().clearTokenOnly();
+  useFigmaDataStore.getState().clearTokens();
   clearTokenFromFigma();
-  useCurrentUserStore.getState().clearCurrentUser();
-  usePluginStore.getState().setAllowedToUsePlugin(false);
+  useCurrentCDDBUserStore.getState().clearCurrentUser();
+  // usePluginStore.getState().setAllowedToUsePlugin(false);
   usePluginStore.getState().setNotification({
     message: "You have been signed out.",
-    variant: "info",
+    variant: "success",
   });
 }
 

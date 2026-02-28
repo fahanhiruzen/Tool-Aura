@@ -38,8 +38,8 @@ export interface FigmaDataPayload {
   nodes: (FigmaNode | null)[];
   mode: string;
   user: FigmaUser | null;
-  accessToken: string;
-  cddbToken: string;
+  figmaToken: string | null;
+  cddbToken: string | null;
   elementData: string;
   fileId: string | null;
   init: boolean;
@@ -52,18 +52,15 @@ export type FigmaDataMessage = Pick<FigmaDataPayload, "user"> &
 interface FigmaDataState {
   data: FigmaDataPayload | null;
   setFigmaData: (data: FigmaDataPayload | null) => void;
-  updateNodeFontStyle: (nodeId: string, fontStyle: string | null) => void;
+  setCddbToken: (token: string ) => void;
+  setFigmaAccessToken: (token: string) => void;
+  clearTokens: () => void;
 }
 
 export const useFigmaDataStore = create<FigmaDataState>((set) => ({
   data: null,
   setFigmaData: (data) => set({ data }),
-  updateNodeFontStyle: (nodeId, fontStyle) =>
-    set((state) => {
-      if (!state.data?.nodes) return state;
-      const nodes = state.data.nodes.map((n) =>
-        n && n.id === nodeId ? { ...n, fontStyle } : n
-      );
-      return { data: { ...state.data, nodes } };
-    }),
+  setCddbToken: (token:string) => set((state) => ({ data: { ...state.data, cddbToken: token } as FigmaDataPayload })),  
+  setFigmaAccessToken: (token:string) => set((state) => ({ data: { ...state.data, figmaToken: token } as FigmaDataPayload })),  
+  clearTokens: () => set((state) => ({ data: { ...state.data, figmaToken: null, cddbToken: null } as FigmaDataPayload })),  
 }));

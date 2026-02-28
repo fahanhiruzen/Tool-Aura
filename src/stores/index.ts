@@ -4,7 +4,8 @@ export { useTableStore } from "./table-store";
 export type { TableFilter } from "./table-store";
 export {
   useAuthStore,
-  persistTokenToFigma,
+  persistCddbTokenToFigma,
+  persistFigmaAccessTokenToFigma,
   clearTokenFromFigma,
   signOut,
 } from "./auth-store";
@@ -16,7 +17,7 @@ export type {
   FigmaNode,
   FigmaSizes,
 } from "./figma-data-store";
-export { useCurrentUserStore } from "./current-user-store";
+export { useCurrentCDDBUserStore } from "./current-user-store";
 export { usePluginStore } from "./plugin-store";
 export type {
   InitLoadingState,

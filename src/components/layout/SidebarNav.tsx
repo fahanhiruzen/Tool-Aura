@@ -14,9 +14,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { NavItem } from "./NavItem";
-import { useNavigationStore } from "@/stores";
+import { useNavigationStore, usePluginStore } from "@/stores";
 import type { NavItem as NavItemType, NavSection } from "@/stores";
-import { mockReleaseRequests } from "@/api/mocks";
+import { useListReleaseRequests } from "@/hooks/use-release-request";
 import { cn } from "@/lib/utils";
 
 const NAV_ICONS: Record<string, LucideIcon> = {
@@ -35,6 +35,11 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   users: Users,
   "role-requests": ClipboardCheck,
 };
+
+export const NAV_WIDGET_CHILDREN: { id: string; label: string }[] = [
+  { id: "widget-1", label: "Widget 1" },
+  { id: "widget-2", label: "Widget 2" },
+];
 
 const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
   {
@@ -56,10 +61,7 @@ const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
         id: "widgets",
         label: "01_Widgets",
         section: "DATA",
-        children: [
-          { id: "widget-1", label: "Widget 1" },
-          { id: "widget-2", label: "Widget 2" },
-        ],
+        children: NAV_WIDGET_CHILDREN,
       },
       { id: "global-search", label: "Global Search", section: "DATA" },
       { id: "text-grids", label: "Text Grids", section: "DATA" },
@@ -102,11 +104,6 @@ const NAV_STRUCTURE: { section: NavSection; items: NavItemType[] }[] = [
   },
 ];
 
-// Badge counts keyed by nav item id
-const NAV_BADGES: Record<string, number> = {
-  "release-requests": mockReleaseRequests.toReview.length,
-};
-
 function itemMatchesQuery(item: NavItemType, q: string): boolean {
   if (item.label.toLowerCase().includes(q)) return true;
   return item.children?.some((c) => c.label.toLowerCase().includes(q)) ?? false;
@@ -119,8 +116,22 @@ export function SidebarNav() {
   const setActive = useNavigationStore((s) => s.setActive);
   const toggleItemExpanded = useNavigationStore((s) => s.toggleItemExpanded);
   const isCollapsed = useNavigationStore((s) => s.isSidebarCollapsed);
+  const currentDocumentKey = "f1r6GcNUhZWol5fpQQnM3u";
+
+  const { data: toReviewData } = useListReleaseRequests({
+    pageNumber: 0,
+    pageSize: 1,
+    currentDocumentKey,
+    filter: { documentKey: "", iam: ["REVIEWER"] },
+  });
+  const releaseRequestsBadge = toReviewData?.totalElements ?? 0;
 
   const q = quickSearch.trim().toLowerCase();
+
+  const getBadge = (itemId: string) => {
+    if (itemId === "release-requests") return releaseRequestsBadge;
+    return undefined;
+  };
 
   return (
     <nav className={cn("flex flex-1 flex-col gap-4 overflow-y-auto py-2", isCollapsed ? "px-1" : "px-2")}>
@@ -166,7 +177,7 @@ export function SidebarNav() {
                     hasChildren={hasChildren}
                     activeId={activeId}
                     onSelectChild={setActive}
-                    badge={NAV_BADGES[item.id]}
+                    badge={getBadge(item.id)}
                     isCollapsed={isCollapsed}
                   />
                 );
