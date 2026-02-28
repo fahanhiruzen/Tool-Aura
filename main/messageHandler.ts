@@ -1,5 +1,16 @@
+const PLUGIN_SIZE = { width: 900, height: 700 };
+const MINIMIZED_SIZE = { width: 70, height: 70 };
+
 export async function messageHandler(msg: any) {
   switch (msg.type) {
+    case "minimize": {
+      figma.ui.resize(MINIMIZED_SIZE.width, MINIMIZED_SIZE.height);
+      break;
+    }
+    case "maximize": {
+      figma.ui.resize(PLUGIN_SIZE.width, PLUGIN_SIZE.height);
+      break;
+    }
     case "jumpToElement": {
       const elementIds = msg.elementIds || [msg.value]; // Support both new and old format
       let foundElement = null;

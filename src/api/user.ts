@@ -1,4 +1,6 @@
 import { PROD_URL } from "@/api/auth";
+import { FigmaUser } from "@/stores/figma-data-store";
+import axios, { AxiosResponse } from "axios";
 
 export interface IRole {
   id: string;
@@ -30,3 +32,13 @@ export async function getCurrentUser(token: string): Promise<ICurrentUser> {
   }
   return res.json() as Promise<ICurrentUser>;
 }
+
+export const validateFigmaToken = async (token: string): Promise<AxiosResponse<FigmaUser>> => {
+  return axios.get(`https://api.figma.com/v1/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const removeFigmaToken = (id: string): Promise<AxiosResponse<any>> => {
+  return axios.get(`${PROD_URL}/figma/logout?userId=${id}`);
+};

@@ -3,17 +3,15 @@ import {
   useFigmaDataStore,
 
 } from "@/stores/figma-data-store";
-import { usePluginStore } from "@/stores/plugin-store";
 
 /**
  * Listens for Figma plugin messages (using event.data.pluginMessage when present),
- * handles typed messages (post-notification, importing-collections, parentCacheData,
+ * handles typed messages (post-notification, importing-collections, etc.)
  * font-style-updated, error), and stores init payload in Zustand + hydrates auth.
  */
 export function useFigmaAuth() {
   const setFigmaData = useFigmaDataStore((s) => s.setFigmaData);
   // const setNotification = usePluginStore((s) => s.setNotification);
-  const setMinimized = usePluginStore((s) => s.setMinimized);
   onmessage = async (event) => {
     const msg = event.data.pluginMessage;
     // console.log("handleMessage ", msg);
@@ -40,7 +38,6 @@ export function useFigmaAuth() {
         break;
       default:
         if (msg.init) {
-          console.log("msg->", msg);
           setFigmaData(msg);
         }
 

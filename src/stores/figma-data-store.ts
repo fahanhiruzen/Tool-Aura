@@ -52,15 +52,15 @@ export type FigmaDataMessage = Pick<FigmaDataPayload, "user"> &
 interface FigmaDataState {
   data: FigmaDataPayload | null;
   setFigmaData: (data: FigmaDataPayload | null) => void;
-  setCddbToken: (token: string ) => void;
-  setFigmaAccessToken: (token: string) => void;
+  setCddbToken: (token: string | null) => void;
+  setFigmaAccessToken: (token: string | null) => void;
   clearTokens: () => void;
 }
 
 export const useFigmaDataStore = create<FigmaDataState>((set) => ({
   data: null,
   setFigmaData: (data) => set({ data }),
-  setCddbToken: (token:string) => set((state) => ({ data: { ...state.data, cddbToken: token } as FigmaDataPayload })),  
-  setFigmaAccessToken: (token:string) => set((state) => ({ data: { ...state.data, figmaToken: token } as FigmaDataPayload })),  
+  setCddbToken: (token:string|null) => set((state) => ({ data: { ...state.data, cddbToken: token } as FigmaDataPayload })),  
+  setFigmaAccessToken: (token:string|null) => set((state) => ({ data: { ...state.data, figmaToken: token } as FigmaDataPayload })),  
   clearTokens: () => set((state) => ({ data: { ...state.data, figmaToken: null, cddbToken: null } as FigmaDataPayload })),  
 }));

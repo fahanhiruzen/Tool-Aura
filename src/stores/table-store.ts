@@ -13,10 +13,7 @@ interface TableState {
   setSearchQuery: (q: string) => void;
   setSelectAll: (value: boolean) => void;
   toggleSelection: (id: string) => void;
-  setSelection: (ids: string[]) => void;
-  addFilter: (filter: TableFilter) => void;
   removeFilter: (id: string) => void;
-  clearFilters: () => void;
 }
 
 export const useTableStore = create<TableState>((set) => ({
@@ -37,16 +34,8 @@ export const useTableStore = create<TableState>((set) => ({
       else next.add(id);
       return { selectedIds: next };
     }),
-  setSelection: (ids) => set({ selectedIds: new Set(ids) }),
-  addFilter: (filter) =>
-    set((state) => ({
-      filters: state.filters.some((f) => f.id === filter.id)
-        ? state.filters
-        : [...state.filters, filter],
-    })),
   removeFilter: (id) =>
     set((state) => ({
       filters: state.filters.filter((f) => f.id !== id),
     })),
-  clearFilters: () => set({ filters: [] }),
 }));

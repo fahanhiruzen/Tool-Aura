@@ -79,7 +79,6 @@ export function signOut(): void {
   useFigmaDataStore.getState().clearTokens();
   clearTokenFromFigma();
   useCurrentCDDBUserStore.getState().clearCurrentUser();
-  // usePluginStore.getState().setAllowedToUsePlugin(false);
   usePluginStore.getState().setNotification({
     message: "You have been signed out.",
     variant: "success",

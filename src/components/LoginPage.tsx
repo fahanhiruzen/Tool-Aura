@@ -2,10 +2,7 @@ import { useState } from "react";
 import { Lock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getStateCode, getRefreshToken, handleAllowFigmaPermission } from "@/api/auth";
-import { getCurrentUser } from "@/api/user";
-import { isAllowedEmail } from "@/config/allowed-users";
 import { useAuthStore, persistCddbTokenToFigma } from "@/stores/auth-store";
-import { useCurrentCDDBUserStore } from "@/stores/current-user-store";
 import { useFigmaDataStore } from "@/stores/figma-data-store";
 import { cn } from "@/lib/utils";
 import { PluginLogo } from "@/components/auth/PluginLogo";
@@ -29,7 +26,6 @@ export function LoginPage() {
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const setCurrentCDDBUser = useCurrentCDDBUserStore((s) => s.setCurrentUser);
   const userIdFromAuth = useAuthStore((s) => s.userId);
   const figmaData = useFigmaDataStore((s) => s.data);
   const userId = userIdFromAuth ?? figmaData?.user?.id ?? null;
@@ -60,13 +56,6 @@ export function LoginPage() {
         handleAllowFigmaPermission(stateCode.state);
         useFigmaDataStore.getState().setCddbToken(value as string);
       }
-      const user = await getCurrentUser(value);
-      if (!isAllowedEmail(user.email)) {
-        setError("You are not authorized to use this plugin. Only designated users can access it.");
-        setLoading(false);
-        return;
-      }
-      setCurrentCDDBUser(user);
       persistCddbTokenToFigma(value);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid token. Please try again.");
