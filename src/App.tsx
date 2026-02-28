@@ -4,6 +4,7 @@ import {
   MutationCache,
   QueryCache,
 } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Maximize2 } from "lucide-react";
 import { AppLayout } from "@/components/layout";
 import { AuthGate } from "@/components/AuthGate";
@@ -13,6 +14,7 @@ import { GettingStartedPage } from "@/pages/GettingStartedPage";
 import { CreateReleaseRequestPage } from "@/pages/CreateReleaseRequestPage";
 import { ResponsiveSuitePage } from "@/pages/ResponsiveSuitePage";
 import { TextGridsPage } from "@/pages/TextGridsPage";
+import { TextVariablesPage } from "@/pages/TextVariablesPage";
 import { UserGroupsPage } from "@/pages/UserGroupsPage";
 import { GlobalSearchPage } from "@/pages/GlobalSearchPage";
 import { UsersPage } from "@/pages/UsersPage";
@@ -22,7 +24,25 @@ import { sendPluginResize } from "@/lib/figma-plugin";
 import { useNavigationStore, usePluginStore } from "@/stores";
 import { NAV_WIDGET_CHILDREN } from "@/components/layout/SidebarNav";
 import { Button } from "@/components/ui/button";
-import { NotificationToast } from "@/components/NotificationToast";
+import { Toaster } from "sonner";
+import type { ToasterProps } from "sonner";
+import { PluginSetup } from "./components/plugin-setup/plugin-setup";
+
+function useFigmaTheme(): ToasterProps["theme"] {
+  const [theme, setTheme] = useState<ToasterProps["theme"]>(() =>
+    document.documentElement.classList.contains("dark") ? "dark" : "light"
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  return theme;
+}
 
 function showErrorNotification(error: unknown) {
   const message =
@@ -60,6 +80,7 @@ function PlaceholderPage({ id }: { id: string | null }) {
 
 function PageRouter() {
   const activeId = useNavigationStore((s) => s.activeId);
+  const releaseRequestId = useNavigationStore((s) => s.releaseRequestId);
 
   const widgetChild = NAV_WIDGET_CHILDREN.find((w) => w.id === activeId);
   if (widgetChild) {
@@ -75,10 +96,14 @@ function PageRouter() {
       return <GettingStartedPage />;
     case "create-release":
       return <CreateReleaseRequestPage />;
+    case "edit-release":
+      return <CreateReleaseRequestPage requestId={releaseRequestId ?? undefined} />;
     case "responsive-suite":
       return <ResponsiveSuitePage />;
     case "text-grids":
       return <TextGridsPage />;
+    case "text-variables":
+      return <TextVariablesPage />;
     case "release-requests":
       return <ReleaseRequestsPage />;
     case "user-groups":
@@ -117,16 +142,19 @@ function MinimizedView() {
 
 function App() {
   const isMinimized = usePluginStore((s) => s.isMinimized);
+  const theme = useFigmaTheme();
   return (
     <QueryClientProvider client={queryClient}>
-      {!isMinimized && <NotificationToast />}
+      <Toaster richColors position="top-center" theme={theme} />
       {isMinimized ? (
         <MinimizedView />
       ) : (
         <AuthGate>
+          <PluginSetup>
           <AppLayout>
             <PageRouter />
           </AppLayout>
+          </PluginSetup>
         </AuthGate>
       )}
     </QueryClientProvider>

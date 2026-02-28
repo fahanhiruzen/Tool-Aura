@@ -1,4 +1,4 @@
-import { api } from "./client";
+import { api, apiCustom } from "./client";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,12 +72,14 @@ export interface ValidationResult {
     }>;
     messageType: "ERROR" | "WARNING";
   }>;
+  status?:string;
   documentErrors: unknown[];
   documentWarnings: unknown[];
   totalErrorElements: number;
   totalPassingElements: number;
   totalWarningElements: number;
   ignoredIds?: string[];
+  hasErrors?: boolean;
 }
 
 export interface PaginatedReleaseRequests {
@@ -139,7 +141,7 @@ export const releaseRequestApi = {
     api<ReleaseRequestStep[]>(`/v1/release-request/${requestId}/steps`),
 
   validate: (requestId: string, ignoredIds: string[]) =>
-    api<ValidationResult>(`/v1/release-request/${requestId}/validate`, {
+    apiCustom<ValidationResult>(`/v1/release-request/${requestId}/validate`, {
       method: "POST",
       body: JSON.stringify({ ignoredIds }),
     }),
@@ -188,4 +190,7 @@ export const releaseRequestApi = {
     api<PaginatedReleaseProcesses>(
       `/v1/release-process/all?pageNumber=${pageNumber}&pageSize=${pageSize}&statuses=ACTIVE,PENDING`
     ),
+
+  getValidationResults: (requestId: string) =>
+    api<ValidationResult>(`/v1/release-request/${requestId}/validation-results`),
 };

@@ -1,4 +1,4 @@
-import { PROD_URL } from "@/api/auth";
+import { BASE_URL } from "@/lib/constants";
 import { FigmaUser } from "@/stores/figma-data-store";
 import axios, { AxiosResponse } from "axios";
 
@@ -19,7 +19,7 @@ export interface ICurrentUser {
  * Call in parallel when token is set/validated.
  */
 export async function getCurrentUser(token: string): Promise<ICurrentUser> {
-  const res = await fetch(`${PROD_URL}/user/current`, {
+  const res = await fetch(`${BASE_URL}/user/current`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -40,5 +40,5 @@ export const validateFigmaToken = async (token: string): Promise<AxiosResponse<F
 };
 
 export const removeFigmaToken = (id: string): Promise<AxiosResponse<any>> => {
-  return axios.get(`${PROD_URL}/figma/logout?userId=${id}`);
+  return axios.get(`${BASE_URL}/figma/logout?userId=${id}`);
 };

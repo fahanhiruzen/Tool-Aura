@@ -14,7 +14,6 @@ export function useFigmaAuth() {
   // const setNotification = usePluginStore((s) => s.setNotification);
   onmessage = async (event) => {
     const msg = event.data.pluginMessage;
-    // console.log("handleMessage ", msg);
     if (!msg) return;
     switch (msg.type) {
       case "elementNotFound":

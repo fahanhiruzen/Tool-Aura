@@ -1,17 +1,42 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ToReviewTable } from "./ToReviewTable";
-import type { ReleaseRequestItem } from "@/api/release-request";
+import { useListReleaseRequests } from "@/hooks/use-release-request";
+import { useFigmaDataStore } from "@/stores";
+
+const PAGE_SIZE = 5;
 
 interface ToReviewSectionProps {
-  items: ReleaseRequestItem[];
+  onEdit?: (id: string) => void;
 }
 
-export function ToReviewSection({ items }: ToReviewSectionProps) {
+export function ToReviewSection({ onEdit }: ToReviewSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const currentDocumentKey = useFigmaDataStore((x) => x.data?.fileId ?? "");
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  function handlePageChange(p: number) {
+    setPage(p);
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  const { data, isLoading, isFetching } = useListReleaseRequests({
+    pageNumber: page,
+    pageSize: PAGE_SIZE,
+    currentDocumentKey,
+    filter: {
+      documentKey: "",
+      iam: ["REVIEWER"],
+    },
+  });
+
+  const items = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm">
+    <div ref={sectionRef} className="rounded-xl border bg-card shadow-sm">
       {/* Header + subtitle — always visible */}
       <div className="px-5 pt-4 pb-3">
         <button
@@ -25,7 +50,7 @@ export function ToReviewSection({ items }: ToReviewSectionProps) {
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               Assigned to me
             </span>
-            <span className="text-sm text-muted-foreground">{items.length}</span>
+            <span className="text-sm text-muted-foreground">{totalElements}</span>
           </div>
           {isOpen ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -41,7 +66,16 @@ export function ToReviewSection({ items }: ToReviewSectionProps) {
       {/* Expanded content */}
       {isOpen && (
         <div className="border-t px-5 pb-5 pt-4">
-          <ToReviewTable items={items} />
+          <ToReviewTable
+            items={items}
+            onEdit={onEdit}
+            page={page}
+            totalPages={totalPages}
+            pageSize={PAGE_SIZE}
+            onPageChange={handlePageChange}
+            isLoading={isLoading}
+            isFetching={isFetching}
+          />
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { BASE_URL } from "@/lib/constants";
 import axios from "axios";
 interface IPostMetaData {
   figmaElementId: string;
@@ -30,8 +31,6 @@ interface IMetaDataResponse extends IPostMetaData {
   userStory: string | null;
   uniqueId:string;
 }
-export const BASE_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
-// export const BASE_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
 export const getFigmaInstance = async (
   documentKey: string,
   figmaInstanceId: string,

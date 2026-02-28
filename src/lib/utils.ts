@@ -9,6 +9,7 @@ export const formatRoleName = (role: string): string => {
   if (!role) return "";
   return role
     .split("_")
+    .slice(1)
     .filter((part) => part.length > 0)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(" ");

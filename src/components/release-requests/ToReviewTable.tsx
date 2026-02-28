@@ -1,11 +1,8 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ReleaseRequestItem, RequestStatusType } from "@/api/release-request";
-
-const PAGE_SIZE = 5;
+import { DocumentName } from "./DocumentName";
 
 // ---------------------------------------------------------------------------
 // Review status badge
@@ -65,51 +62,42 @@ function ReviewStatusBadge({ status }: { status: RequestStatusType }) {
 // Row
 // ---------------------------------------------------------------------------
 
-function ToReviewRow({ item }: { item: ReleaseRequestItem }) {
+function ToReviewRow({ item, onEdit }: { item: ReleaseRequestItem; onEdit?: (id: string) => void }) {
   const isApproved = item.reviewers.some((r) => r.approved);
   return (
     <tr className="border-b last:border-b-0 hover:bg-muted/30 transition-colors">
-      {/* Document Name */}
       <td className="px-4 py-3 text-sm max-w-0">
-        {item.documentLink ? (
-          <div className="min-w-0">
-            <a
-              href={item.documentLink}
-              target="_blank"
-              rel="noreferrer"
-              className="block truncate font-medium text-foreground underline decoration-muted-foreground/50 underline-offset-2 hover:decoration-foreground"
-              title={item.documentKey}
+        <div className="min-w-0">
+          {item.documentKey ? (
+            <DocumentName
+              documentKey={item.documentKey}
+              fallback={item.documentKey}
+              onEdit={() => onEdit?.(item.id)}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => onEdit?.(item.id)}
+              className="block truncate font-medium text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
             >
-              {item.documentKey}
-            </a>
-            {item.domainId && (
-              <div className="truncate text-xs text-muted-foreground" title={item.domainId}>{item.domainId}</div>
-            )}
-          </div>
-        ) : (
-          <div className="min-w-0">
-            <span className="block truncate text-muted-foreground" title={item.documentKey}>{item.documentKey || "—"}</span>
-            {item.domainId && (
-              <div className="truncate text-xs text-muted-foreground" title={item.domainId}>{item.domainId}</div>
-            )}
-          </div>
-        )}
+              —
+            </button>
+          )}
+          {item.domainId && (
+            <div className="truncate text-xs text-muted-foreground" title={item.domainId}>{item.domainId}</div>
+          )}
+        </div>
       </td>
 
-      {/* Release Process */}
       <td className="px-4 py-3 text-sm font-medium text-foreground truncate max-w-0">
         <span className="block truncate" title={item.releaseProcessName}>
           {item.releaseProcessName || "—"}
         </span>
       </td>
 
-      {/* Review Status */}
       <td className="px-4 py-3">
         {isApproved ? (
-          <Badge
-            variant="outline"
-            className="font-normal border-emerald-300 text-emerald-700"
-          >
+          <Badge variant="outline" className="font-normal border-emerald-300 text-emerald-700">
             Approved
           </Badge>
         ) : (
@@ -117,7 +105,6 @@ function ToReviewRow({ item }: { item: ReleaseRequestItem }) {
         )}
       </td>
 
-      {/* Actions */}
       <td className="px-4 py-3 text-center">
         <button
           type="button"
@@ -128,6 +115,30 @@ function ToReviewRow({ item }: { item: ReleaseRequestItem }) {
         >
           <ExternalLink className="h-4 w-4" />
         </button>
+      </td>
+    </tr>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton
+// ---------------------------------------------------------------------------
+
+function SkeletonRow() {
+  return (
+    <tr className="border-b">
+      <td className="px-4 py-3">
+        <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+        <div className="mt-1.5 h-3 w-1/2 animate-pulse rounded bg-muted" />
+      </td>
+      <td className="px-4 py-3">
+        <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+      </td>
+      <td className="px-4 py-3">
+        <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+      </td>
+      <td className="px-4 py-3 text-center">
+        <div className="mx-auto h-4 w-4 animate-pulse rounded bg-muted" />
       </td>
     </tr>
   );
@@ -178,76 +189,34 @@ function PaginationControls({
 // Table
 // ---------------------------------------------------------------------------
 
-type SortKey = "documentKey" | "releaseProcessName" | "status";
-type SortDir = "asc" | "desc";
-
 interface ToReviewTableProps {
   items: ReleaseRequestItem[];
+  onEdit?: (id: string) => void;
+  page: number;
+  totalPages: number;
+  pageSize: number;
+  onPageChange: (p: number) => void;
+  isLoading?: boolean;
+  isFetching?: boolean;
 }
 
-export function ToReviewTable({ items }: ToReviewTableProps) {
-  const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("releaseProcessName");
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
-  const [page, setPage] = useState(0);
-
-  function handleSearchChange(value: string) {
-    setSearch(value);
-    setPage(0);
-  }
-
-  function handleSort(key: SortKey) {
-    if (key === sortKey) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
-    }
-    setPage(0);
-  }
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return items;
-    const q = search.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.documentKey?.toLowerCase().includes(q) ||
-        item.domainId?.toLowerCase().includes(q) ||
-        item.releaseProcessName?.toLowerCase().includes(q),
-    );
-  }, [items, search]);
-
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      const av = a[sortKey] ?? "";
-      const bv = b[sortKey] ?? "";
-      const cmp = String(av).localeCompare(String(bv));
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [filtered, sortKey, sortDir]);
-
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-  const paginated = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
-  const SortIcon = ({ col }: { col: SortKey }) => (
-    <span className="ml-1 text-muted-foreground">
-      {sortKey === col ? (sortDir === "asc" ? "↑" : "↓") : "↕"}
-    </span>
-  );
-
+export function ToReviewTable({
+  items,
+  onEdit,
+  page,
+  totalPages,
+  pageSize,
+  onPageChange,
+  isLoading = false,
+  isFetching = false,
+}: ToReviewTableProps) {
+  const isPaging = isFetching && !isLoading;
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search"
-          className="pl-9"
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-      </div>
-
-      <div className="overflow-hidden rounded-lg border">
+      <div
+        className="overflow-hidden rounded-lg border transition-opacity duration-150"
+        style={{ minHeight: isLoading ? 41 + pageSize * 57 : undefined, opacity: isPaging ? 0.5 : 1 }}
+      >
         <table className="w-full table-fixed text-left">
           <colgroup>
             <col className="w-[48%]" />
@@ -258,31 +227,13 @@ export function ToReviewTable({ items }: ToReviewTableProps) {
           <thead>
             <tr className="border-b bg-muted/20">
               <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">
-                <button
-                  type="button"
-                  className="flex items-center hover:text-foreground"
-                  onClick={() => handleSort("documentKey")}
-                >
-                  Document Name <SortIcon col="documentKey" />
-                </button>
-              </th>
-              <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground ">
-                <button
-                  type="button"
-                  className="flex text-left hover:text-foreground"
-                  onClick={() => handleSort("releaseProcessName")}
-                >
-                  Release Process <SortIcon col="releaseProcessName" />
-                </button>
+                Document Name
               </th>
               <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">
-                <button
-                  type="button"
-                  className="flex items-center hover:text-foreground"
-                  onClick={() => handleSort("status")}
-                >
-                  Review Status <SortIcon col="status" />
-                </button>
+                Release Process
+              </th>
+              <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground">
+                Review Status
               </th>
               <th className="px-4 py-2.5 text-xs font-medium text-muted-foreground text-center">
                 Actions
@@ -290,17 +241,16 @@ export function ToReviewTable({ items }: ToReviewTableProps) {
             </tr>
           </thead>
           <tbody>
-            {paginated.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: pageSize }).map((_, i) => <SkeletonRow key={i} />)
+            ) : items.length === 0 ? (
               <tr>
-                <td
-                  colSpan={4}
-                  className="px-4 py-8 text-center text-sm text-muted-foreground"
-                >
+                <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   No items to review.
                 </td>
               </tr>
             ) : (
-              paginated.map((item) => <ToReviewRow key={item.id} item={item} />)
+              items.map((item) => <ToReviewRow key={item.id} item={item} onEdit={onEdit} />)
             )}
           </tbody>
         </table>
@@ -309,7 +259,7 @@ export function ToReviewTable({ items }: ToReviewTableProps) {
       <PaginationControls
         page={page}
         totalPages={totalPages}
-        onPageChange={setPage}
+        onPageChange={onPageChange}
       />
     </div>
   );

@@ -9,7 +9,8 @@
       "Bash(npm run ui)",
       "Bash(ls /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/*.lock /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/bun.lockb)",
       "Bash(npm install @radix-ui/react-tooltip --save)",
-      "Bash(ls /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/.env*)"
+      "Bash(ls /Users/farhanmalhi/Downloads/Apsfactory/Mercedes/Tool-Aura/.env*)",
+      "Bash(npm install sonner)"
     ]
   }
 }

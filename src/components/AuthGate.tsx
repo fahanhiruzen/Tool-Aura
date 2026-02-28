@@ -30,6 +30,7 @@ export function AuthGate({ children }: AuthGateProps) {
           variant: "error",
         });
       });
+      
     }
     if(figmaAccessToken){
       validateFigmaToken(figmaAccessToken).then((_) => {

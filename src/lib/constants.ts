@@ -1,166 +1,376 @@
+export const BASE_URL = "https://cddb3.uici-int.i.mercedes-benz.com/cddb/api";
+
+
 export const TEAMS = [
-    {
-      id: "1250045740358480766",
-      label: "00_Library",
-    },
-    {
-      id: "1270390298016262919",
-      label: "00_Prototype",
-    },
-    {
-      id: "1351905896986192679",
-      label: "00_SpecialDays",
-    },
-    {
-      id: "1256208063924505770",
-      label: "08_Navigation",
-    },
-    {
-      id: "1352627326300600914",
-      label: "09_Phone",
-    },
-    {
-      id: "1352627448830020225",
-      label: "10_Connectivity",
-    },
-    {
-      id: "1341376164221729502",
-      label: "21_Climate",
-    },
-    {
-      id: "1351477801231390411",
-      label: "22_HU_RVC_SVS_Camera",
-    },
-    {
-      id: "1352627581894365882",
-      label: "37_RemoteUI",
-    },
-    {
-      id: "1336288106728195040",
-      label: "40_Home",
-    },
-    {
-      id: "1312352079512291143",
-      label: "42_MVA",
-    },
-    {
-      id: "1336254288716046539",
-      label: "49_UserProfiles",
-    },
-    {
-      id: "1287041003486112467",
-      label: "53_Store",
-    },
-    {
-      id: "1352985570312623625",
-      label: "64_AmbientStyles",
-    },
-    {
-      id: "1352627671899383519",
-      label: "85_ScreenCasting",
-    },
-    {
-      id: "1265942165249263551",
-      label: "99_ArtMode",
-    },
-    {
-      id: "1301183374070552245",
-      label: "Design System Team",
-    },
-    {
-      id: "1318873055568714554",
-      label: "DomainDesign",
-    },
-    {
-      id: "1326587500250899178",
-      label: "Eco Coach App Team",
-    },
-    {
-      id: "1306690424027458557",
-      label: "eCom SDK Team",
-    },
-    {
-      id: "1329440211970734141",
-      label: "Energizing App Team",
-    },
-    {
-      id: "1329440712246570243",
-      label: "Finance App Team",
-    },
-    {
-      id: "1322506718658831387",
-      label: "Fuel & Pay",
-    },
-    {
-      id: "1331241307351588187",
-      label: "House_of_UX/R",
-    },
-    {
-      id: "1329440423427877020",
-      label: "Logbook App Team",
-    },
-    {
-      id: "1276505185957205378",
-      label: "MBRDI Concept Team (from Mercedes-Benz)",
-    },
-    {
-      id: "1250354377556231448",
-      label: "Mercedes me App Team",
-    },
-    {
-      id: "1291297115578762419",
-      label: "Navistance",
-    },
-    {
-      id: "1251415795824024914",
-      label: "Office",
-    },
-    {
-      id: "1253232481680649822",
-      label: "Playground",
-    },
-    {
-      id: "1306657039098198521",
-      label: "RD/DX",
-    },
-    {
-      id: "1269192189263845366",
-      label: "RDK - UXEC",
-    },
-    {
-      id: "1329439184461460164",
-      label: "Remote Parking App Team",
-    },
-    {
-      id: "1329444958392355732",
-      label: "RiS SDK Team",
-    },
-    {
-      id: "1298952978570072381",
-      label: "ScreenDesign",
-    },
-    {
-      id: "1331625287759237945",
-      label: "Unity",
-    },
-    {
-      id: "1354069956139015601",
-      label: "Vans Digital Platform",
-    },
-    {
-      id: "1266295982876000636",
-      label: "Way Of Working",
-    },
-    {
-      id: "1354004951392224894",
-      label: "XX_CCR",
-    },
-    {
-      id: "1309876719034304063",
-      label: "XX_CustomerFeedbackLoop",
-    },
-    {
-      id: "1352953381902522651",
-      label: "XX_Instrument_Cluster",
-    },
-  ];
+  { id: "FT_00_FigmaTraining", label: "FT_00_FigmaTraining" },
+  {
+    id: "00 Domain",
+    label: "00 Domain",
+  },
+  {
+    id: "00_HU_Library",
+    label: "00_HU_Library",
+  },
+  {
+    id: "00_IC_HUD_Libraries",
+    label: "00_IC_HUD_Libraries",
+  },
+  {
+    id: "00_MBUX OneWorld",
+    label: "00_MBUX OneWorld",
+  },
+  {
+    id: "00_Prototype",
+    label: "00_Prototype",
+  },
+  {
+    id: "00_Special_Days",
+    label: "00_Special_Days",
+  },
+  { id: "01_Widgets", label: "01_Widgets" },
+  {
+    id: "02 Main",
+    label: "02 Main",
+  },
+  {
+    id: "08_Navigation",
+    label: "08_Navigation",
+  },
+  {
+    id: "09_Phone",
+    label: "09_Phone",
+  },
+  {
+    id: "100_VAN",
+    label: "100_VAN",
+  },
+  {
+    id: "10_Connectivity",
+    label: "10_Connectivity",
+  },
+  {
+    id: "11_Bluetooth",
+    label: "11_Bluetooth",
+  },
+  {
+    id: "12_Contacts",
+    label: "12_Contacts",
+  },
+  {
+    id: "16_Offroad",
+    label: "16_Offroad",
+  },
+  {
+    id: "18_Car_Info",
+    label: "18_Car_Info",
+  },
+  {
+    id: "19_Car_Functions",
+    label: "19_Car_Functions",
+  },
+  {
+    id: "20_Seat",
+    label: "20_Seat",
+  },
+  {
+    id: "21_Climate",
+    label: "21_Climate",
+  },
+  {
+    id: "22_Camera_Parking",
+    label: "22_Camera_Parking",
+  },
+  {
+    id: "24_AES",
+    label: "24_AES",
+  },
+  {
+    id: "35_SystemSettings",
+    label: "35_SystemSettings",
+  },
+  {
+    id: "36_Active_Comfort",
+    label: "36_Active_Comfort",
+  },
+  {
+    id: "37_RemoteUI",
+    label: "37_RemoteUI",
+  },
+  {
+    id: "38_DOM",
+    label: "38_DOM",
+  },
+  {
+    id: "40_Home",
+    label: "40_Home",
+  },
+  {
+    id: "41_Entertainment",
+    label: "41_Entertainment",
+  },
+  {
+    id: "42_MVA",
+    label: "42_MVA",
+  },
+  {
+    id: "47_Navistance",
+    label: "47_Navistance",
+  },
+  {
+    id: "48_Tips_App",
+    label: "48_Tips_App",
+  },
+  {
+    id: "49_User_Profiles",
+    label: "49_User_Profiles",
+  },
+  {
+    id: "51_Service_Overview",
+    label: "51_Service_Overview",
+  },
+  {
+    id: "52_Messaging",
+    label: "52_Messaging",
+  },
+  {
+    id: "53_Store",
+    label: "53_Store",
+  },
+  {
+    id: "54_In_Car_Office",
+    label: "54_In_Car_Office",
+  },
+  {
+    id: "58_Augmented_Video",
+    label: "58_Augmented_Video",
+  },
+  {
+    id: "60_Software_Update",
+    label: "60_Software_Update",
+  },
+  {
+    id: "62_AMG_HU_CDD",
+    label: "62_AMG_HU_CDD",
+  },
+  {
+    id: "62_AMG_IC_HUD",
+    label: "62_AMG_IC_HUD",
+  },
+  {
+    id: "63_Ambient_Light",
+    label: "63_Ambient_Light",
+  },
+  {
+    id: "64_Ambient_Styles",
+    label: "64_Ambient_Styles",
+  },
+  {
+    id: "68_sound_settings",
+    label: "68_sound_settings",
+  },
+  {
+    id: "70_Basic_Infrastructure",
+    label: "70_Basic_Infrastructure",
+  },
+  {
+    id: "71_Core_Dev",
+    label: "71_Core_Dev",
+  },
+  {
+    id: "04_nuMBrs",
+    label: "04_nuMBrs",
+  },
+  {
+    id: "76_myAI",
+    label: "76_myAI",
+  },
+  {
+    id: "82_Consent",
+    label: "82_Consent",
+  },
+  {
+    id: "83_Camera_Gallery",
+    label: "83_Camera_Gallery",
+  },
+  {
+    id: "85_Screen_Casting",
+    label: "85_Screen_Casting",
+  },
+  {
+    id: "87_Starfish",
+    label: "87_Starfish",
+  },
+  { id: "88_Navigation (Project A)", label: "88_Navigation (Project A)" },
+  {
+    id: "92_App_Settings",
+    label: "92_App_Settings",
+  },
+  {
+    id: "99_Art_Mode",
+    label: "99_Art_Mode",
+  },
+  {
+    id: "App Design System",
+    label: "App Design System",
+  },
+  {
+    id: "China_Training_Session",
+    label: "China_Training_Session",
+  },
+  {
+    id: "Copy",
+    label: "Copy",
+  },
+  {
+    id: "DomainDesign",
+    label: "DomainDesign",
+  },
+  {
+    id: "Eco Coach App",
+    label: "Eco Coach App",
+  },
+  {
+    id: "eCom SDK Team",
+    label: "eCom SDK Team",
+  },
+  {
+    id: "Energizing App",
+    label: "Energizing App",
+  },
+  {
+    id: "Extra",
+    label: "Extra",
+  },
+  {
+    id: "Finance App",
+    label: "Finance App",
+  },
+  {
+    id: "Fuel &amp; Pay",
+    label: "Fuel &amp; Pay",
+  },
+  {
+    id: "House_of_UX/R",
+    label: "House_of_UX/R",
+  },
+  {
+    id: "Logbook App",
+    label: "Logbook App",
+  },
+  {
+    id: "MB.OS Docs",
+    label: "MB.OS Docs",
+  },
+  {
+    id: "MBRDI Concept Team (from Mercedes-Benz)",
+    label: "MBRDI Concept Team (from Mercedes-Benz)",
+  },
+  {
+    id: "Mercedes Benz App (Europe)",
+    label: "Mercedes Benz App (Europe)",
+  },
+  {
+    id: "Mercedes-Benz App (China)",
+    label: "Mercedes-Benz App (China)",
+  },
+  {
+    id: "Mercedes-Benz Connect App (US)",
+    label: "Mercedes-Benz Connect App (US)",
+  },
+  {
+    id: "Office",
+    label: "Office",
+  },
+  {
+    id: "Onboard_Service_App",
+    label: "Onboard_Service_App",
+  },
+  {
+    id: "ONBOARDING",
+    label: "ONBOARDING",
+  },
+  {
+    id: "Playground",
+    label: "Playground",
+  },
+  {
+    id: "RD/DX",
+    label: "RD/DX",
+  },
+  {
+    id: "RDK - UXEC",
+    label: "RDK - UXEC",
+  },
+  {
+    id: "Reach me - Inbox",
+    label: "Reach me - Inbox",
+  },
+  {
+    id: "Remote Parking App",
+    label: "Remote Parking App",
+  },
+  {
+    id: "RiS SDK",
+    label: "RiS SDK",
+  },
+  {
+    id: "RSE",
+    label: "RSE",
+  },
+  {
+    id: "ScreenDesign",
+    label: "ScreenDesign",
+  },
+  {
+    id: "SystemUI",
+    label: "SystemUI",
+  },
+  {
+    id: "test",
+    label: "test",
+  },
+  {
+    id: "Test Drive",
+    label: "Test Drive",
+  },
+  {
+    id: "TEV",
+    label: "TEV",
+  },
+  {
+    id: "TRAINING",
+    label: "TRAINING",
+  },
+  {
+    id: "UI_Tooling",
+    label: "UI_Tooling",
+  },
+  {
+    id: "Unity",
+    label: "Unity",
+  },
+  {
+    id: "Vans Digital Platform",
+    label: "Vans Digital Platform",
+  },
+  {
+    id: "Weather",
+    label: "Weather",
+  },
+  {
+    id: "XX_CCR",
+    label: "XX_CCR",
+  },
+  {
+    id: "XX_CustomerFeedbackLoop",
+    label: "XX_CustomerFeedbackLoop",
+  },
+  {
+    id: "XX_UI_Spokesperson",
+    label: "XX_UI_Spokesperson",
+  },
+  {
+    id: "Z",
+    label: "Z",
+  },
+];

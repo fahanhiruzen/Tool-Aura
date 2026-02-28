@@ -18,7 +18,6 @@ function isValidPhotoUrl(url: string | undefined): url is string {
 export function UserProfileCard() {
   const figmaUser = useFigmaDataStore((s) => s.data?.user ?? null);
   const cddbUser = useCurrentCDDBUserStore((s) => s.currentUser);
-  console.log("cddbUser->", cddbUser);
   const isCollapsed = useNavigationStore((s) => s.isSidebarCollapsed);
   const name = figmaUser?.name ?? cddbUser?.username ?? "Figma user";
   const emailOrId =

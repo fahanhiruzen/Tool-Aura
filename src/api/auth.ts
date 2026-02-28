@@ -1,6 +1,6 @@
 import { api } from "@/api/client";
+import { BASE_URL } from "@/lib/constants";
 
-export const PROD_URL = "https://cddb3.uici.i.mercedes-benz.com/cddb/api";
 
 export interface IAuth {
   accessToken: string;
@@ -21,7 +21,7 @@ export const handleAllowFigmaPermission = (state: string): void => {
     "https://www.figma.com/oauth?" +
     "response_type=code" +
     "&client_id=iQVYzmXcwgP3NaGTc40Waz" +
-    `&redirect_uri=${PROD_URL}/figma/callback` +
+    `&redirect_uri=${BASE_URL}/figma/callback` +
     `&state=${state}` +
     "&scope=current_user:read,file_comments:read,file_content:read,file_metadata:read,file_versions:read,file_variables:read,library_assets:read,library_content:read,team_library_content:read,file_dev_resources:read,projects:read,webhooks:read,webhooks:write";
 
@@ -35,7 +35,7 @@ export async function getStateCode(
   userId: string,
   token: string
 ): Promise<IStateCodeResponse> {
-  const url = `${PROD_URL}/figma/state?userId=${encodeURIComponent(userId)}`;
+  const url = `${BASE_URL}/figma/state?userId=${encodeURIComponent(userId)}`;
   const res = await fetch(url, {
     method: "GET",
     headers: {

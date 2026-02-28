@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { releaseRequestApi } from "@/api/release-request";
 import { usePluginStore } from "@/stores/plugin-store";
 import type {
@@ -119,5 +119,7 @@ export function useListReleaseRequests(params: {
   return useQuery({
     queryKey: ["release-requests", params],
     queryFn: () => releaseRequestApi.list(params),
+    staleTime: 0,
+    placeholderData: keepPreviousData,
   });
 }

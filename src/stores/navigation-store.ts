@@ -18,10 +18,12 @@ export interface NavItem {
 
 interface NavigationState {
   activeId: string | null;
+  releaseRequestId: string | null;
   quickSearch: string;
   expandedItemIds: Set<string>;
   isSidebarCollapsed: boolean;
   setActive: (id: string) => void;
+  setActiveWithReleaseId: (id: string, releaseRequestId: string) => void;
   setQuickSearch: (value: string) => void;
   toggleItemExpanded: (id: string) => void;
   toggleSidebar: () => void;
@@ -29,10 +31,12 @@ interface NavigationState {
 
 export const useNavigationStore = create<NavigationState>((set) => ({
   activeId: "dashboard",
+  releaseRequestId: null,
   quickSearch: "",
   expandedItemIds: new Set(["widgets"]),
   isSidebarCollapsed: false,
-  setActive: (id) => set({ activeId: id }),
+  setActive: (id) => set({ activeId: id, releaseRequestId: null }),
+  setActiveWithReleaseId: (id, releaseRequestId) => set({ activeId: id, releaseRequestId }),
   setQuickSearch: (value) => set({ quickSearch: value }),
   toggleItemExpanded: (id) =>
     set((state) => {

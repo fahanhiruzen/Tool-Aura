@@ -19,4 +19,4 @@ export type {
 } from "./figma-data-store";
 export { useCurrentCDDBUserStore } from "./current-user-store";
 export { usePluginStore } from "./plugin-store";
-export type { NotificationVariant, PluginNotification } from "./plugin-store";
+export type { NotificationVariant } from "./plugin-store";
