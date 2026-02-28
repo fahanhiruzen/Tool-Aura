@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { persistFigmaAccessTokenToFigma, useFigmaDataStore, usePluginStore } from "@/stores";
 import { getStateCode, handleAllowFigmaPermission, getAccessToken } from "@/api/auth";
-import { PluginLogo } from "./PluginLogo";
+import { StarLogo } from "./StarLogo";
 import { StarFieldBackdrop } from "./StarFieldBackdrop";
 
 const TOTAL = 30;
@@ -88,8 +88,8 @@ export function FigmaTokenWaitScreen() {
         {/* center icon */}
         <div className="absolute flex items-center justify-center">
           
-            <div className="rounded-[10px] ring-1 ring-white/15 bg-white/5 backdrop-blur-md">
-              <PluginLogo />
+            <div className=" ring-white/15 bg-white/5 rounded-full w-[104px] h-[104px] backdrop-blur-sm flex items-center justify-center">
+              <StarLogo />
             </div>
         </div>
       </div>

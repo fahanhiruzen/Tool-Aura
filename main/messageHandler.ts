@@ -1,4 +1,4 @@
-const PLUGIN_SIZE = { width: 900, height: 700 };
+const PLUGIN_SIZE = { width: 850, height: 700 };
 const MINIMIZED_SIZE = { width: 70, height: 70 };
 
 export async function messageHandler(msg: any) {

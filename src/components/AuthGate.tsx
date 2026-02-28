@@ -5,6 +5,7 @@ import { LoadingScreen } from "@/components/auth/LoadingScreen";
 import { FigmaTokenWaitScreen } from "@/components/auth/FigmaTokenWaitScreen";
 import { getCurrentUser, removeFigmaToken, validateFigmaToken } from "@/api/user";
 import { useEffect } from "react";
+import { getStateCode, handleAllowFigmaPermission } from "@/api/auth";
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -45,9 +46,18 @@ export function AuthGate({ children }: AuthGateProps) {
         setFigmaAccessToken(null);
       });
     }
+    if(cddbToken && !figmaAccessToken){
+      getStateCode(data?.user?.id??"", cddbToken).then((res) => {
+        handleAllowFigmaPermission(res.state);
+      }).catch((err) => {
+        usePluginStore.getState().setNotification({
+          message: err.message,
+          variant: "error",
+        });
+      });
+    }
   }, [data]);
-  // Plugin hasn't sent the init message yet — show a neutral loading screen
-  // instead of flashing TokenModal or FigmaTokenWaitScreen prematurely.
+
   if (data === null) {
     return (
       <main style={{ height: "100vh" }}>

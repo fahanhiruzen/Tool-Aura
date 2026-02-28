@@ -1,6 +1,6 @@
 import { messageHandler } from "./messageHandler";
 
-const PLUGIN_SIZE = { width: 900, height: 700 };
+const PLUGIN_SIZE = { width: 850, height: 700 };
 
 const showUi = () => {
   figma.showUI(__html__, { themeColors: true, height: PLUGIN_SIZE.height, width: PLUGIN_SIZE.width });
