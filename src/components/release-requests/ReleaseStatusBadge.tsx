@@ -2,20 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ReleaseRequestStatus } from "@/api/types";
 
-const CONFIG: Record<
-  ReleaseRequestStatus,
-  { label: string; className: string }
-> = {
-  completed: {
-    label: "Completed",
-    className:
-      "border border-emerald-300 bg-transparent text-emerald-700 dark:text-emerald-400",
-  },
-  in_progress: {
-    label: "In Progress",
-    className:
-      "border border-amber-300 bg-transparent text-amber-700 dark:text-amber-400",
-  },
+const VARIANT_MAP: Record<ReleaseRequestStatus, "success" | "warning"> = {
+  completed: "success",
+  in_progress: "warning",
+};
+
+const LABEL_MAP: Record<ReleaseRequestStatus, string> = {
+  completed: "Completed",
+  in_progress: "In Progress",
 };
 
 interface ReleaseStatusBadgeProps {
@@ -23,17 +17,13 @@ interface ReleaseStatusBadgeProps {
   className?: string;
 }
 
-export function ReleaseStatusBadge({
-  status,
-  className,
-}: ReleaseStatusBadgeProps) {
-  const { label, className: variantClass } = CONFIG[status];
+export function ReleaseStatusBadge({ status, className }: ReleaseStatusBadgeProps) {
   return (
     <Badge
-      variant="outline"
-      className={cn("font-normal whitespace-nowrap", variantClass, className)}
+      variant={VARIANT_MAP[status]}
+      className={cn("font-normal whitespace-nowrap", className)}
     >
-      {label}
+      {LABEL_MAP[status]}
     </Badge>
   );
 }

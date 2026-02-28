@@ -30,32 +30,16 @@ type StatusFilter = "ALL" | "REQUESTED" | "APPROVED" | "REJECTED";
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
-function RequestStatusBadge({
-  status,
-}: {
-  status: IRequest["status"];
-}) {
+function RequestStatusBadge({ status }: { status: IRequest["status"] }) {
   const config = {
-    REQUESTED: {
-      label: "Requested",
-      className:
-        "border border-amber-300 bg-transparent text-amber-700 dark:text-amber-400",
-    },
-    APPROVED: {
-      label: "Approved",
-      className:
-        "border border-emerald-300 bg-transparent text-emerald-700 dark:text-emerald-400",
-    },
-    REJECTED: {
-      label: "Rejected",
-      className:
-        "border border-red-300 bg-transparent text-red-700 dark:text-red-400",
-    },
+    REQUESTED: { label: "Requested", variant: "warning" },
+    APPROVED:  { label: "Approved",  variant: "success" },
+    REJECTED:  { label: "Rejected",  variant: "error"   },
   } as const;
 
-  const { label, className } = config[status];
+  const { label, variant } = config[status];
   return (
-    <Badge variant="outline" className={cn("font-normal text-xs", className)}>
+    <Badge variant={variant} className="font-normal text-xs">
       {label}
     </Badge>
   );

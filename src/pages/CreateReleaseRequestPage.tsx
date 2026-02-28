@@ -3,7 +3,10 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Link2,
   Loader2,
+  Paperclip,
+  Plus,
   RotateCcw,
   Search,
   User,
@@ -12,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn, formatUsername } from "@/lib/utils";
 import { useNavigationStore } from "@/stores";
 import { useReleaseProcesses } from "@/hooks/use-release-request";
@@ -75,53 +79,34 @@ const STEPS_TEMPLATE: Omit<Step, "status">[] = [
 // Step badges (driven by API step status)
 // ---------------------------------------------------------------------------
 
-function DoneBadge() {
+function StepBadge({ status, isCurrentStep }: { status: StepStatus; isCurrentStep: boolean }) {
+  if (status === "ready")
+    return (
+      <Badge variant="success" className="rounded-full font-medium gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Done
+      </Badge>
+    );
+  if (status === "failed")
+    return (
+      <Badge variant="error" className="rounded-full font-medium gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+        Failed
+      </Badge>
+    );
+  if (status === "open" && isCurrentStep)
+    return (
+      <Badge variant="warning" className="rounded-full font-medium gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        In Progress
+      </Badge>
+    );
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-      Done
-    </span>
-  );
-}
-
-function InProgressBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-      In Progress
-    </span>
-  );
-}
-
-function PendingBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+    <Badge variant="info" className="rounded-full font-medium gap-1">
       <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
       Pending
-    </span>
+    </Badge>
   );
-}
-
-function FailedBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-      Failed
-    </span>
-  );
-}
-
-function StepBadge({
-  status,
-  isCurrentStep,
-}: {
-  status: StepStatus;
-  isCurrentStep: boolean;
-}) {
-  if (status === "ready") return <DoneBadge />;
-  if (status === "failed") return <FailedBadge />;
-  if (status === "open" && isCurrentStep) return <InProgressBadge />;
-  return <PendingBadge />;
 }
 
 // ---------------------------------------------------------------------------
@@ -266,6 +251,7 @@ interface ReviewerSelectProps {
   selectedPresets: SelectedPreset[];
   onPresetsChange: (presets: SelectedPreset[]) => void;
   disabled?: boolean;
+  placement?: "auto" | "top";
 }
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -278,6 +264,7 @@ function ReviewerSelect({
   selectedPresets,
   onPresetsChange,
   disabled,
+  placement = "auto",
 }: ReviewerSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -360,11 +347,12 @@ function ReviewerSelect({
     const dropdownHeight = dropdownRef.current.offsetHeight;
     const GAP = 4;
     const MARGIN = 8;
-    const spaceBelow = window.innerHeight - rect.bottom - GAP;
     const top =
-      spaceBelow >= dropdownHeight + MARGIN
-        ? rect.bottom + GAP
-        : rect.top - dropdownHeight - GAP;
+      placement === "top"
+        ? rect.top - dropdownHeight - GAP
+        : window.innerHeight - rect.bottom - GAP >= dropdownHeight + MARGIN
+          ? rect.bottom + GAP
+          : rect.top - dropdownHeight - GAP;
     setDropdownStyle({
       position: "fixed",
       top,
@@ -372,7 +360,7 @@ function ReviewerSelect({
       width: Math.max(rect.width, 320),
       zIndex: 9999,
     });
-  }, [open]);
+  }, [open, placement]);
 
   function openDropdown() {
     setOpen(true);
@@ -697,6 +685,18 @@ export function CreateReleaseRequestPage({ requestId }: { requestId?: string }) 
   const [assignReviewersError, setAssignReviewersError] = useState<string | null>(null);
   const [reviewersAssigned, setReviewersAssigned] = useState(false);
 
+  // Step 3: Create Release
+  const [releaseNotes, setReleaseNotes] = useState("");
+  const [userStoryLinks, setUserStoryLinks] = useState<string[]>([]);
+  const [userStoryLinkInput, setUserStoryLinkInput] = useState("");
+  const [attachedFileLinks, setAttachedFileLinks] = useState<string[]>([]);
+  const [attachedFileLinkInput, setAttachedFileLinkInput] = useState("");
+  const [notifyEmails, setNotifyEmails] = useState<string[]>([]);
+  const [notifyPresets, setNotifyPresets] = useState<SelectedPreset[]>([]);
+  const [createReleaseLoading, setCreateReleaseLoading] = useState(false);
+  const [createReleaseError, setCreateReleaseError] = useState<string | null>(null);
+  const [createReleaseSuccess, setCreateReleaseSuccess] = useState(false);
+
   const { data: processesData, isLoading: processesLoading } = useReleaseProcesses();
   const { cddbDocument } = usePluginSetup();
 
@@ -800,6 +800,7 @@ export function CreateReleaseRequestPage({ requestId }: { requestId?: string }) 
     if (hasPassed && validateState.requestId) {
       const reviewDone = stepsFromApi?.find((s) => s.stepType === "REVIEW")?.status === "DONE";
       if (!reviewDone) setExpandedStep(2);
+      else setExpandedStep(3);
     }
   }, [hasPassed, validateState.requestId, stepsFromApi]);
 
@@ -920,6 +921,37 @@ export function CreateReleaseRequestPage({ requestId }: { requestId?: string }) 
       setAssignReviewersError(err instanceof Error ? err.message : "Failed to assign reviewers");
     } finally {
       setAssignReviewersLoading(false);
+    }
+  }
+
+  async function handleCreateRelease() {
+    if (!validateState.requestId) return;
+    setCreateReleaseError(null);
+    setCreateReleaseLoading(true);
+    try {
+      let allNotifyEmails = [...notifyEmails];
+      for (const preset of notifyPresets) {
+        const full = await presetApi.getById(preset.id);
+        const emails = (full.members ?? []).map((m) => m.userEmail).filter(Boolean);
+        allNotifyEmails = [...allNotifyEmails, ...emails];
+      }
+      allNotifyEmails = [...new Set(allNotifyEmails)];
+      await releaseRequestApi.createRelease(validateState.requestId, {
+        figmaDocumentVersionLink: cddbDocument?.documentKey
+          ? `https://www.figma.com/file/${cddbDocument.documentKey}`
+          : "",
+        releaseTag: releaseNotes,
+        userStoryLink: userStoryLinks.join("\n"),
+        requirementsLink: attachedFileLinks.join("\n"),
+        presets: notifyPresets.map((p) => parseInt(p.id, 10)),
+        userIdsToNotify: allNotifyEmails,
+      });
+      setCreateReleaseSuccess(true);
+      await fetchSteps(validateState.requestId);
+    } catch (err) {
+      setCreateReleaseError(err instanceof Error ? err.message : "Failed to create release");
+    } finally {
+      setCreateReleaseLoading(false);
     }
   }
 
@@ -1100,6 +1132,173 @@ export function CreateReleaseRequestPage({ requestId }: { requestId?: string }) 
                       </>
                     ) : (
                       "Assign reviewers"
+                    )}
+                  </Button>
+                </div>
+              ) : step.number === 3 && validateState.requestId ? (
+                <div className="flex flex-col gap-4">
+                  {/* Release Notes */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-foreground">Release Notes</label>
+                    <textarea
+                      value={releaseNotes}
+                      onChange={(e) => setReleaseNotes(e.target.value)}
+                      placeholder="Describe what's included in this release…"
+                      rows={4}
+                      disabled={createReleaseLoading || createReleaseSuccess}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  {/* User Story Links */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-foreground">User Story Links</label>
+                    {userStoryLinks.length > 0 && (
+                      <ul className="flex flex-col gap-1">
+                        {userStoryLinks.map((link, idx) => (
+                          <li key={idx} className="flex items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-xs">
+                            <Link2 className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 truncate" title={link}>{link}</span>
+                            <button
+                              type="button"
+                              onClick={() => setUserStoryLinks((prev) => prev.filter((_, i) => i !== idx))}
+                              className="rounded p-0.5 hover:bg-muted-foreground/20"
+                              aria-label="Remove link"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={userStoryLinkInput}
+                        onChange={(e) => setUserStoryLinkInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && userStoryLinkInput.trim()) {
+                            setUserStoryLinks((prev) => [...prev, userStoryLinkInput.trim()]);
+                            setUserStoryLinkInput("");
+                          }
+                        }}
+                        placeholder="https://…"
+                        disabled={createReleaseLoading || createReleaseSuccess}
+                        className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        disabled={!userStoryLinkInput.trim() || createReleaseLoading || createReleaseSuccess}
+                        onClick={() => {
+                          if (userStoryLinkInput.trim()) {
+                            setUserStoryLinks((prev) => [...prev, userStoryLinkInput.trim()]);
+                            setUserStoryLinkInput("");
+                          }
+                        }}
+                        className="h-9 gap-1.5"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Attachments */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-foreground">Attachments</label>
+                    {attachedFileLinks.length > 0 && (
+                      <ul className="flex flex-col gap-1">
+                        {attachedFileLinks.map((link, idx) => (
+                          <li key={idx} className="flex items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-xs">
+                            <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="flex-1 truncate" title={link}>{link}</span>
+                            <button
+                              type="button"
+                              onClick={() => setAttachedFileLinks((prev) => prev.filter((_, i) => i !== idx))}
+                              className="rounded p-0.5 hover:bg-muted-foreground/20"
+                              aria-label="Remove attachment"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={attachedFileLinkInput}
+                        onChange={(e) => setAttachedFileLinkInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && attachedFileLinkInput.trim()) {
+                            setAttachedFileLinks((prev) => [...prev, attachedFileLinkInput.trim()]);
+                            setAttachedFileLinkInput("");
+                          }
+                        }}
+                        placeholder="https://…"
+                        disabled={createReleaseLoading || createReleaseSuccess}
+                        className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        disabled={!attachedFileLinkInput.trim() || createReleaseLoading || createReleaseSuccess}
+                        onClick={() => {
+                          if (attachedFileLinkInput.trim()) {
+                            setAttachedFileLinks((prev) => [...prev, attachedFileLinkInput.trim()]);
+                            setAttachedFileLinkInput("");
+                          }
+                        }}
+                        className="h-9 gap-1.5"
+                      >
+                        <Paperclip className="h-3.5 w-3.5" />
+                        Attach
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Notify via Email */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-foreground">Notify others via Email</label>
+                    <ReviewerSelect
+                      value={notifyEmails}
+                      onChange={setNotifyEmails}
+                      selectedPresets={notifyPresets}
+                      onPresetsChange={setNotifyPresets}
+                      disabled={createReleaseLoading || createReleaseSuccess}
+                      placement="top"
+                    />
+                  </div>
+
+                  {createReleaseError && (
+                    <p className="text-xs text-red-600 dark:text-red-400">{createReleaseError}</p>
+                  )}
+
+                  {createReleaseSuccess && (
+                    <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 dark:border-emerald-800 dark:bg-emerald-900/20">
+                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                        Release created successfully
+                      </span>
+                    </div>
+                  )}
+
+                  <Button
+                    size="sm"
+                    disabled={createReleaseLoading || createReleaseSuccess}
+                    onClick={handleCreateRelease}
+                    className="self-end gap-2"
+                  >
+                    {createReleaseLoading ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        Creating…
+                      </>
+                    ) : (
+                      "Create Release"
                     )}
                   </Button>
                 </div>

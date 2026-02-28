@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, ExternalLink, HelpCircle, X } from "lucide-react";
 import { cn, formatUsername } from "@/lib/utils";
+import { badgeVariants } from "@/components/ui/badge";
 import type { ReleaseRequest, Reviewer } from "@/api/types";
 import { DocumentName } from "./DocumentName";
 
@@ -30,17 +31,12 @@ function getStatus(request: ReleaseRequest): { label: string; variant: StatusVar
   return { label: "Reviews Pending", variant: "reviews-pending" };
 }
 
-const BADGE_CLASSES: Record<StatusVariant, string> = {
-  released:
-    "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  "release-pending":
-    "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  rejected:
-    "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400",
-  "reviews-pending":
-    "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "no-reviewers":
-    "border-gray-200 bg-gray-100 text-gray-500 dark:border-gray-700 dark:bg-gray-800/30 dark:text-gray-400",
+const BADGE_VARIANT_MAP: Record<StatusVariant, "success" | "warning" | "error" | "info" | "outline"> = {
+  released: "success",
+  "release-pending": "warning",
+  rejected: "error",
+  "reviews-pending": "info",
+  "no-reviewers": "outline",
 };
 
 // ---------------------------------------------------------------------------
@@ -200,8 +196,8 @@ function StatusBadge({ request }: { request: ReleaseRequest }) {
         type="button"
         onClick={handleOpen}
         className={cn(
-          "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-opacity",
-          BADGE_CLASSES[variant],
+          badgeVariants({ variant: BADGE_VARIANT_MAP[variant] }),
+          "rounded-full font-medium",
           hasDetails ? "cursor-pointer hover:opacity-80" : "cursor-default"
         )}
       >
@@ -257,7 +253,7 @@ interface ReleaseRequestRowProps {
 }
 
 function ReleaseRequestRow({ request, onEdit }: ReleaseRequestRowProps) {
-  const hasLink = request.domainName !== null;
+ 
   return (
     <tr className="border-b last:border-b-0 hover:bg-muted/30 transition-colors">
       {/* Document */}
@@ -311,13 +307,12 @@ function ReleaseRequestRow({ request, onEdit }: ReleaseRequestRowProps) {
       </td>
 
       {/* Action */}
-      <td className="px-4 py-3 text-right">
+      <td className="px-4 py-3 text-center">
         <button
           type="button"
-          disabled={!hasLink}
           aria-label="Open document"
-          onClick={() => hasLink && window.open(request.domainName!, "_blank")}
-          className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          onClick={() => window.open(`https://www.figma.com/file/${request.documentKey}`, "_blank")}
+          className="text-muted-foreground hover:text-foreground transition-colors"
         >
           <ExternalLink className="h-4 w-4" />
         </button>

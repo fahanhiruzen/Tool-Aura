@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ToReviewTable } from "./ToReviewTable";
 import { useListReleaseRequests } from "@/hooks/use-release-request";
 import { useFigmaDataStore } from "@/stores";
@@ -46,10 +47,10 @@ export function ToReviewSection({ onEdit }: ToReviewSectionProps) {
         >
           <div className="flex items-center gap-3">
             <span className="text-base font-semibold">To review</span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+            <Badge variant="warning" className="rounded-full font-medium gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
               Assigned to me
-            </span>
+            </Badge>
             <span className="text-sm text-muted-foreground">{totalElements}</span>
           </div>
           {isOpen ? (

@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import type { ReleaseRequestItem, RequestStatusType } from "@/api/release-request";
 import { DocumentName } from "./DocumentName";
 
@@ -8,51 +7,23 @@ import { DocumentName } from "./DocumentName";
 // Review status badge
 // ---------------------------------------------------------------------------
 
-const STATUS_CONFIG: Record<
-  RequestStatusType,
-  { label: string; className: string }
-> = {
-  NEW: {
-    label: "New",
-    className: "border-slate-300 text-slate-600",
-  },
-  IN_PROGRESS: {
-    label: "In Progress",
-    className: "border-blue-300 text-blue-700",
-  },
-  VALIDATION: {
-    label: "Validating",
-    className: "border-amber-300 text-amber-700",
-  },
-  VALIDATION_FAILED: {
-    label: "Validation Failed",
-    className: "border-red-300 text-red-700",
-  },
-  VALIDATION_SUCCEEDED: {
-    label: "Validation Passed",
-    className: "border-emerald-300 text-emerald-700",
-  },
-  REVIEW: {
-    label: "Pending Review",
-    className: "border-amber-300 text-amber-700",
-  },
-  RELEASE: {
-    label: "Releasing",
-    className: "border-blue-300 text-blue-700",
-  },
-  COMPLETED: {
-    label: "Completed",
-    className: "border-emerald-300 text-emerald-700",
-  },
+type BadgeVariant = "success" | "error" | "warning" | "info" | "outline";
+
+const STATUS_CONFIG: Record<RequestStatusType, { label: string; variant: BadgeVariant }> = {
+  NEW:                  { label: "New",               variant: "outline"  },
+  IN_PROGRESS:          { label: "In Progress",        variant: "info"     },
+  VALIDATION:           { label: "Validating",          variant: "warning"  },
+  VALIDATION_FAILED:    { label: "Validation Failed",   variant: "error"    },
+  VALIDATION_SUCCEEDED: { label: "Validation Passed",   variant: "success"  },
+  REVIEW:               { label: "Pending Review",      variant: "warning"  },
+  RELEASE:              { label: "Releasing",           variant: "info"     },
+  COMPLETED:            { label: "Completed",           variant: "success"  },
 };
 
 function ReviewStatusBadge({ status }: { status: RequestStatusType }) {
-  const { label, className } = STATUS_CONFIG[status] ?? {
-    label: status,
-    className: "border-slate-300 text-slate-600",
-  };
+  const { label, variant } = STATUS_CONFIG[status] ?? { label: status, variant: "outline" as BadgeVariant };
   return (
-    <Badge variant="outline" className={cn("font-normal whitespace-nowrap", className)}>
+    <Badge variant={variant} className="font-normal whitespace-nowrap">
       {label}
     </Badge>
   );
@@ -97,7 +68,7 @@ function ToReviewRow({ item, onEdit }: { item: ReleaseRequestItem; onEdit?: (id:
 
       <td className="px-4 py-3">
         {isApproved ? (
-          <Badge variant="outline" className="font-normal border-emerald-300 text-emerald-700">
+          <Badge variant="success" className="font-normal">
             Approved
           </Badge>
         ) : (
@@ -108,8 +79,7 @@ function ToReviewRow({ item, onEdit }: { item: ReleaseRequestItem; onEdit?: (id:
       <td className="px-4 py-3 text-center">
         <button
           type="button"
-          onClick={() => item.documentLink && window.open(item.documentLink)}
-          disabled={!item.documentLink}
+          onClick={() => window.open(item.documentLink?item.documentLink:`https://www.figma.com/file/${item.documentKey}`, "_blank")}
           className="text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Open document"
         >

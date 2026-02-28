@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useHealthCheck } from "@/hooks/use-dashboard";
 import { cn } from "@/lib/utils";
 
@@ -32,10 +33,10 @@ export function HealthCheckCard() {
               {data.message}
             </p>
             {data.allIdsLinked && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+              <Badge variant="success" className="rounded-full font-medium gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 All IDs linked
-              </span>
+              </Badge>
             )}
           </div>
         )}
